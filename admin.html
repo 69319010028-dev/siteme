@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ภควัต (Pakawat) | ระบบจัดการผู้ดูแล (Admin Portal)</title>
+  <meta name="description" content="ระบบจัดการผลงาน ใบงาน และประวัติการศึกษาสำหรับผู้ดูแล (Admin) - นายภควัต ศรีรัตน์">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👑</text></svg>">
+</head>
+
+<body class="admin-page">
+
+  <!-- Ambient Glow Background -->
+  <div class="bg-ambient" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="app-wrapper">
+
+    <!-- ================= LOGIN SCREEN OVERLAY (SHOW IF NOT LOGGED IN) ================= -->
+    <div class="admin-login-screen" id="admin-login-screen">
+      <div class="admin-login-card">
+        <div class="admin-login-brand">
+          <div class="logo-badge" style="width:54px; height:54px; font-size:1.6rem; margin:0 auto 12px;">👑</div>
+          <h2>ระบบจัดการผู้ดูแล (Admin Portal)</h2>
+          <p>นายภควัต ศรีรัตน์ (Pakawat Portfolio)</p>
+        </div>
+
+        <form id="admin-login-page-form">
+          <div class="form-group" style="text-align:left;">
+            <label class="form-label" for="admin-pin-page-input">กรอกรหัสผ่าน Admin เพื่อเข้าสู่ระบบ *</label>
+            <div style="position:relative;">
+              <input type="password" id="admin-pin-page-input" class="form-input"
+                placeholder="กรอกรหัสผ่าน (เริ่มต้น: 1234)" required autocomplete="current-password" autofocus />
+              <button type="button" class="btn-toggle-pwd" onclick="togglePinVisibility('admin-pin-page-input')"
+                title="แสดง/ซ่อนรหัสผ่าน">
+                👁️
+              </button>
+            </div>
+            <div id="admin-login-page-error" class="login-error-msg" style="display:none;"></div>
+          </div>
+
+          <div
+            style="display:flex; align-items:center; justify-content:space-between; margin-top:0.75rem; margin-bottom:1.25rem;">
+            <label
+              style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-muted); cursor:pointer;">
+              <input type="checkbox" id="admin-remember-page" checked
+                style="accent-color:var(--accent-cyan); cursor:pointer;" />
+              จดจำการเข้าสู่ระบบ
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-cyan"
+            style="width:100%; justify-content:center; padding:12px; font-size:1rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            เข้าสู่ระบบผู้ดูแล
+          </button>
+
+          <div class="pin-hint-card" style="margin-top:1.25rem; text-align:left;">
+            💡 <b>คำแนะนำ:</b> หากยังไม่เคยเปลี่ยน รหัสผ่านเริ่มต้นคือ <code
+              style="background:rgba(197,155,109,0.2); padding:2px 6px; border-radius:4px; color:var(--accent-cyan); font-weight:bold;">1234</code>
+          </div>
+
+          <div style="margin-top:1.5rem; text-align:center;">
+            <a href="index.html" class="btn-back-to-index">
+              ← กลับสู่หน้าเว็บหลักสำหรับคุณครู (index.html)
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================= MAIN ADMIN DASHBOARD (SHOWN WHEN LOGGED IN) ================= -->
+    <div class="admin-main-dashboard" id="admin-main-dashboard" style="display:none;">
+
+      <!-- Admin Header -->
+      <header class="site-header admin-header">
+        <div class="container nav-container">
+          <div class="admin-header-brand" style="display:flex; align-items:center; gap:12px;">
+            <div class="logo-badge" style="background: linear-gradient(135deg, #c59b6d, #8a5a36);">👑</div>
+            <div>
+              <div
+                style="font-weight:700; font-size:1.05rem; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                <span id="admin-header-name">ภควัต</span>
+                <span class="admin-badge-tag">ADMIN PORTAL</span>
+              </div>
+              <div style="font-size:0.78rem; color:var(--text-dim);">ระบบจัดการคลังใบงานและข้อมูลส่วนตัว</div>
+            </div>
+          </div>
+
+          <div class="nav-actions">
+            <a href="index.html" target="_blank" class="btn-admin-preview"
+              title="เปิดดูหน้าเว็บจริงที่คุณครูเห็นในแท็บใหม่">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+              <span>ดูหน้าเว็บคุณครู ↗</span>
+            </a>
+
+            <button type="button" class="btn-mode-toggle outline" onclick="openChangePinModal()"
+              title="เปลี่ยนรหัสผ่าน Admin">
+              🔑 เปลี่ยนรหัส
+            </button>
+
+            <button class="theme-btn" id="theme-toggle-btn" title="สลับโหมดมืด/สว่าง">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              </svg>
+            </button>
+
+            <button type="button" class="btn-logout" onclick="adminLogout()" title="ออกจากระบบแอดมิน">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span>ออกจากระบบ</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Admin Top Status Banner -->
+      <div class="admin-top-banner">
+        <div class="container admin-top-banner-inner">
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <span class="realtime-live-badge" title="ระบบซิงค์ข้อมูลเรียลไทม์ทำงานอยู่">
+              <span class="pulse-green-dot"></span>
+              <span>เรียลไทม์ ซิงค์สด</span>
+            </span>
+            <span>ทุกการเพิ่ม แก้ไข หรือลบ จะถูกบันทึกและแสดงในหน้าเว็บคุณครูทันที</span>
+          </div>
+          <a href="index.html" class="link-switch-to-viewer">
+            👁️ สลับไปดูหน้าเว็บคุณครู (index.html)
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Admin Content -->
+      <main class="main-content" style="padding-top:1.5rem;">
+        <div class="container">
+
+          <!-- Admin Quick Stats -->
+          <div class="admin-stats-grid">
+            <div class="admin-stat-card">
+              <div class="admin-stat-icon">📚</div>
+              <div>
+                <div class="admin-stat-num" id="admin-stat-works-count">0</div>
+                <div class="admin-stat-label">ใบงานในระบบทั้งหมด</div>
+              </div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-icon">🏫</div>
+              <div>
+                <div class="admin-stat-num">3</div>
+                <div class="admin-stat-label">ระดับประวัติการศึกษา</div>
+              </div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-icon">🔒</div>
+              <div>
+                <div class="admin-stat-num" style="font-size:1.25rem; color:#10b981;">รหัสผ่านพร้อมใช้งาน</div>
+                <div class="admin-stat-label">ป้องกันข้อมูลปลอดภัย 100%</div>
+              </div>
+            </div>
+            <div class="admin-stat-card action-card">
+              <button type="button" class="btn btn-cyan" onclick="openAddModal()"
+                style="width:100%; height:100%; justify-content:center; font-weight:700; padding:14px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                + เพิ่มใบงานใหม่ทันที
+              </button>
+            </div>
+          </div>
+
+          <!-- Admin Navigation Tabs -->
+          <div class="admin-nav-tabs">
+            <button class="admin-tab-btn active" id="tab-btn-works" onclick="switchAdminTab('works')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              จัดการคลังใบงาน (<span id="tab-works-count">0</span>)
+            </button>
+            <button class="admin-tab-btn" id="tab-btn-hero" onclick="switchAdminTab('hero')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              จัดการแบนเนอร์หน้าแรก & รูปโปรไฟล์
+            </button>
+            <button class="admin-tab-btn" id="tab-btn-edu" onclick="switchAdminTab('edu')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+              </svg>
+              จัดการประวัติการศึกษา & โลโก้โรงเรียน (3 ระดับ)
+            </button>
+            <button class="admin-tab-btn" id="tab-btn-brand" onclick="switchAdminTab('brand')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              จัดการชื่อ & โลโก้เว็บไซต์
+            </button>
+            <button class="admin-tab-btn" id="tab-btn-backup" onclick="switchAdminTab('backup')" style="border-color: rgba(197, 155, 109, 0.45); background: rgba(197, 155, 109, 0.08);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              💾 สำรองข้อมูล & Vercel
+            </button>
+          </div>
+
+          <!-- ================= TAB 1: WORKSHEETS MANAGEMENT ================= -->
+          <div class="admin-tab-content active" id="admin-tab-works">
+            <div class="content-panel">
+              <div class="panel-header" style="justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                <div>
+                  <h3 class="panel-title" style="display:flex; align-items:center; gap:8px;">
+                    <span>📂</span> รายการใบงานทั้งหมดในระบบ
+                  </h3>
+                  <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">
+                    คุณสามารถกดเพิ่มใบงานใหม่ แก้ไขชื่อ/รูปภาพ/วันที่/ลิงก์ หรือลบใบงานที่ไม่ต้องการได้ทันที
+                  </p>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                  <button type="button" class="btn btn-secondary" onclick="resetSampleData()"
+                    title="รีเซ็ตข้อมูลใบงานเป็นค่าเริ่มต้น">
+                    🔄 รีเซ็ตข้อมูลตัวอย่าง
+                  </button>
+                  <button type="button" class="btn btn-cyan" onclick="openAddModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    เพิ่มใบงานใหม่
+                  </button>
+                </div>
+              </div>
+
+              <!-- Search and Filter in Admin -->
+              <div class="worksheet-controls" style="margin-bottom:1.5rem;">
+                <div class="controls-top">
+                  <div class="search-box">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="admin-search-worksheet" placeholder="ค้นหาตามชื่อใบงาน..."
+                      oninput="handleAdminSearch(this.value)" />
+                  </div>
+
+                  <div class="filter-pills">
+                    <button class="filter-btn active" id="admin-filter-all"
+                      onclick="clearAdminDateFilter()">ทั้งหมด</button>
+
+                    <!-- Calendar Filter in Admin -->
+                    <div class="cal-filter-container" id="admin-cal-filter-container">
+                      <button type="button" class="filter-btn cal-filter-trigger" id="admin-btn-calendar-filter"
+                        onclick="toggleAdminCalPopover()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2">
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                          <line x1="16" y1="2" x2="16" y2="6"></line>
+                          <line x1="8" y1="2" x2="8" y2="6"></line>
+                          <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <span id="admin-cal-filter-text">กรองตามวันที่ (ปฏิทิน)</span>
+                      </button>
+
+                      <div class="cal-dropdown-popover" id="admin-filter-cal-popover">
+                        <div class="cal-popover-header">
+                          <div class="cal-popover-title">
+                            <span>เลือกวันที่เพื่อดูใบงาน</span>
+                          </div>
+                          <button type="button" class="cal-popover-close"
+                            onclick="closeAdminCalPopover()">&times;</button>
+                        </div>
+                        <div class="inline-calendar" id="admin-filter-calendar-picker"></div>
+                        <div class="cal-popover-footer">
+                          <button type="button" class="cal-action-btn clear"
+                            onclick="clearAdminDateFilter()">ล้างตัวกรอง</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Admin Worksheets Cards Grid -->
+              <div class="works-grid" id="admin-worksheets-grid">
+                <!-- Rendered dynamically by js/admin.js -->
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= TAB 2: EDUCATION & LOGOS MANAGEMENT ================= -->
+          <div class="admin-tab-content" id="admin-tab-edu" style="display:none;">
+            <div class="content-panel">
+              <div class="panel-header">
+                <div>
+                  <h3 class="panel-title" style="display:flex; align-items:center; gap:8px;">
+                    <span>🏫</span> จัดการประวัติการศึกษา & โลโก้สถานศึกษา (3 ระดับ)
+                  </h3>
+                  <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">
+                    สามารถอัปโหลดไฟล์ภาพโลโก้โรงเรียน (PNG โปร่งใส/JPG/SVG) และแก้ไขชื่อสถานศึกษาได้ตามต้องการ
+                  </p>
+                </div>
+              </div>
+
+              <div class="admin-edu-grid" id="admin-edu-cards-container">
+                <!-- Rendered dynamically by js/admin.js -->
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= TAB 3: BRAND & SITE LOGO ================= -->
+          <div class="admin-tab-content" id="admin-tab-brand" style="display:none;">
+            <div class="content-panel">
+              <div class="panel-header">
+                <div>
+                  <h3 class="panel-title" style="display:flex; align-items:center; gap:8px;">
+                    <span>🏷️</span> จัดการชื่อและโลโก้เว็บไซต์ (Site Logo & Brand)
+                  </h3>
+                  <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">
+                    แก้ไขตัวอักษรในกรอบโลโก้ ชื่อเว็บไซต์ และคำขยาย (จะอัปเดตแบบเรียลไทม์ไปยังหน้าเว็บหลักทันที)
+                  </p>
+                </div>
+              </div>
+
+              <!-- Live Preview Box -->
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem;">
+                <!-- 1. Browser Tab Mockup Preview -->
+                <div style="margin-bottom: 1.5rem;">
+                  <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.5rem; font-weight: 600;">
+                    🌐 ตัวอย่างแท็บหัวเว็บ (Browser Tab Live Preview):
+                  </div>
+                  <div style="display:inline-flex; align-items:center; gap:8px; background:#1e293b; color:#f1f5f9; padding:8px 16px; border-radius:10px 10px 0 0; border:1px solid rgba(255,255,255,0.15); border-bottom:none; font-size:0.85rem; max-width:340px; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+                    <span id="preview-tab-favicon" style="font-size:1.1rem;">🚀</span>
+                    <span id="preview-tab-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">ภควัต (Pakawat) | พอร์ตโฟลิโอ & คลังเก็บใบงาน</span>
+                    <span style="margin-left:auto; opacity:0.6; font-size:0.75rem; padding-left:8px;">✕</span>
+                  </div>
+                </div>
+
+                <!-- 2. Navbar Brand Preview -->
+                <div>
+                  <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.75rem; font-weight: 600;">
+                    👁️ ตัวอย่างการแสดงผลบนแถบเมนูด้านบน (Navbar Live Preview):
+                  </div>
+                  <div style="display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle); box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+                    <div class="logo-badge" id="preview-brand-badge" style="width:38px; height:38px; font-size:1.15rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)); color:#000; overflow:hidden;">P</div>
+                    <span style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);" id="preview-brand-text">ภควัต <b style="color:var(--accent-cyan);">Portfolio</b></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Edit Form -->
+              <form id="brand-settings-form" style="max-width: 650px;" onsubmit="handleBrandSave(event)">
+                <!-- Section: Browser Tab Settings -->
+                <div style="background:rgba(197, 155, 109, 0.06); border:1px solid rgba(197, 155, 109, 0.25); border-radius:var(--radius-md); padding:1.25rem; margin-bottom:1.5rem;">
+                  <h4 style="font-size:0.95rem; color:var(--accent-cyan); margin-bottom:0.75rem; display:flex; align-items:center; gap:6px;">
+                    <span>🌐</span> หัวข้อแท็บเบราว์เซอร์ & รูปภาพโลโก้แท็บ (Browser Tab Title & Logo Favicon)
+                  </h4>
+                  
+                  <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label class="form-label" for="input-site-title">ชื่อบนแท็บเบราว์เซอร์ (Tab Title) *</label>
+                    <input type="text" id="input-site-title" class="form-input" placeholder="เช่น ภควัต (Pakawat) | พอร์ตโฟลิโอ & คลังเก็บใบงาน" oninput="updateBrandPreview()" />
+                    <small style="color: var(--text-dim); font-size: 0.8rem; margin-top: 4px; display: block;">ข้อความที่จะแสดงบนแท็บของ Google Chrome / Safari / Edge</small>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                      <label class="form-label" style="margin-bottom:0;">🖼️ ใส่รูปภาพโลโก้เป็นไอคอนแท็บ (Favicon Image: PNG / JPG / SVG / WebP / ICO)</label>
+                      <button type="button" id="btn-clear-favicon-img" onclick="clearFaviconImage()" style="display:none; font-size:0.8rem; background:none; border:none; color:#ef4444; cursor:pointer; text-decoration:underline;">
+                        ✕ ลบรูปโลโก้แท็บ
+                      </button>
+                    </div>
+
+                    <!-- Upload & Pick Logo Buttons -->
+                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
+                      <label class="btn btn-primary" style="cursor:pointer; display:inline-flex; align-items:center; gap:8px; padding:9px 18px; font-size:0.88rem; font-weight:600;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="17 8 12 3 7 8"></polyline>
+                          <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <span>📁 เลือกไฟล์รูปภาพโลโก้ของคุณ</span>
+                        <input type="file" id="favicon-file" accept="image/*,.ico" style="display:none;" onchange="handleFaviconUpload(this)" />
+                      </label>
+
+                      <button type="button" class="btn btn-secondary" onclick="useBrandLogoAsFavicon()" style="display:inline-flex; align-items:center; gap:6px; padding:9px 16px; font-size:0.85rem;" title="ดึงรูปโลโก้เว็บไซต์ด้านล่างมาเป็น Favicon อัตโนมัติ">
+                        <span>✨ ใช้รูปเดียวกับโลโก้เว็บไซต์</span>
+                      </button>
+
+                      <button type="button" class="btn btn-secondary" onclick="useAvatarAsFavicon()" style="display:inline-flex; align-items:center; gap:6px; padding:9px 16px; font-size:0.85rem;" title="ใช้รูปโปรไฟล์เป็น Favicon">
+                        <span>👤 ใช้รูปโปรไฟล์</span>
+                      </button>
+                    </div>
+
+                    <!-- Input path or DataUrl -->
+                    <div style="display:flex; gap:10px; align-items:center;">
+                      <span style="font-size:0.82rem; color:var(--text-dim); white-space:nowrap;">หรือใส่พาธ / ลิงก์รูป:</span>
+                      <input type="text" id="input-site-favicon" class="form-input" style="font-size:0.85rem;" placeholder="เช่น assets/images/logo.png หรือ ลิงก์รูปภาพ" oninput="updateBrandPreview()" />
+                    </div>
+
+                    <small style="color: var(--text-dim); font-size: 0.8rem; margin-top: 6px; display: block;">แนะนำรูปภาพสัดส่วน 1:1 (จัตุรัส) เช่น PNG โปร่งใส, JPG หรือ SVG ขนาด 32x32 หรือ 64x64 ขึ้นไป</small>
+                  </div>
+                </div>
+
+                <!-- 1. Upload Logo Image -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <label class="form-label" style="margin-bottom:0;">🖼️ อัปโหลดรูปภาพโลโก้เว็บไซต์ (PNG โปร่งใส / JPG / SVG / WebP)</label>
+                    <button type="button" id="btn-clear-logo-img" onclick="clearLogoImage()" style="display:none; font-size:0.8rem; background:none; border:none; color:#ef4444; cursor:pointer; text-decoration:underline;">
+                      ✕ ลบรูปโลโก้ (ใช้ตัวอักษรแทน)
+                    </button>
+                  </div>
+                  
+                  <div class="image-upload-zone" id="brand-logo-dropzone" style="min-height: 100px; padding: 14px; text-align: center;">
+                    <input type="file" id="brand-logo-file" accept="image/*" onchange="handleBrandLogoUpload(this)" />
+                    <div class="upload-placeholder" id="brand-logo-placeholder">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="1.8">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                      </svg>
+                      <span style="font-size:0.92rem; font-weight:600;">คลิกหรือลากไฟล์ภาพโลโก้มาวางที่นี่</span>
+                      <small style="color: var(--text-dim); font-size: 0.78rem;">รองรับไฟล์ PNG (แนะนำพื้นหลังโปร่งใส), JPG, SVG, WebP</small>
+                    </div>
+                    <img id="brand-logo-preview-img" class="upload-preview" alt="ตัวอย่างรูปโลโก้" style="max-height: 80px; object-fit: contain;" />
+                  </div>
+                </div>
+
+                <!-- 2. Text / Icon Badge (Fallback) -->
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                  <label class="form-label" for="input-brand-badge">ตัวอักษรหรือไอคอนย่อในเมนูบาร์ (Navbar Logo Badge)</label>
+                  <input type="text" id="input-brand-badge" class="form-input" maxlength="4" placeholder="เช่น P หรือ ภ หรือ 🚀" oninput="updateBrandPreview()" />
+                  <small style="color: var(--text-dim); font-size: 0.8rem; margin-top: 4px; display: block;">ใส่ตัวอักษร 1-2 ตัว หรืออิโมจิ เพื่อแสดงในกรอบสี่เหลี่ยมโค้งมนกรณีไม่ได้อัปโหลดรูปภาพ</small>
+                </div>
+
+                <!-- 3. Main Brand Name -->
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                  <label class="form-label" for="input-brand-name">ชื่อหลักในเมนูบาร์ (Navbar Brand Name) *</label>
+                  <input type="text" id="input-brand-name" class="form-input" placeholder="เช่น ภควัต หรือ Pakawat หรือชื่อของคุณ" required oninput="updateBrandPreview()" />
+                </div>
+
+                <!-- 4. Subtitle / Tag -->
+                <div class="form-group" style="margin-bottom: 1.75rem;">
+                  <label class="form-label" for="input-brand-subtitle">คำขยายต่อท้าย (Tag / Subtitle)</label>
+                  <input type="text" id="input-brand-subtitle" class="form-input" placeholder="เช่น Portfolio หรือ คลังผลงาน หรือ Studio" oninput="updateBrandPreview()" />
+                  <small style="color: var(--text-dim); font-size: 0.8rem; margin-top: 4px; display: block;">คำที่แสดงเป็นตัวหนาสีทองต่อท้ายชื่อหลัก</small>
+                </div>
+
+                <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                  <button type="submit" class="btn btn-cyan" style="padding:10px 24px; font-size:0.95rem; font-weight:600;">
+                    💾 บันทึกชื่อ & โลโก้เว็บไซต์
+                  </button>
+                  <button type="button" class="btn btn-secondary" onclick="resetBrandDefaults()" style="padding:10px 18px; font-size:0.88rem;">
+                    รีเซ็ตกลับเป็นค่าเริ่มต้น
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- ================= TAB 4: HERO BANNER & AVATAR MANAGEMENT ================= -->
+          <div class="admin-tab-content" id="admin-tab-hero" style="display:none;">
+            <div class="content-panel">
+              <div class="panel-header" style="justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                <div>
+                  <h3 class="panel-title" style="display:flex; align-items:center; gap:8px;">
+                    <span>✨</span> จัดการแบนเนอร์หน้าแรก & รูปโปรไฟล์ (Hero Section)
+                  </h3>
+                  <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">
+                    ปรับแต่งรูปภาพอวตาร/โปรไฟล์, ข้อความทักทาย, ชื่อเด่น, ป้ายสาขาวิชา, และสถิติผลการเรียนที่แสดงบนหน้าแรก
+                  </p>
+                </div>
+              </div>
+
+              <!-- Live Preview Card (Dual preview: Hero Banner & Profile Card matching user screenshot) -->
+              <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 2rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                  <div style="font-size:0.82rem; font-weight:700; color:var(--accent-cyan); text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:6px;">
+                    <span>👁️</span> ตัวอย่างแสดงผลจริงบนหน้าเว็บ (Live Preview)
+                  </div>
+                  <div style="display:flex; gap:6px; background:rgba(0,0,0,0.25); padding:3px; border-radius:8px; border:1px solid var(--border-subtle);">
+                    <button type="button" class="btn-chip" id="btn-preview-tab-hero" onclick="switchPreviewCard('hero')" style="font-size:0.75rem; padding:4px 10px; border-radius:6px; cursor:pointer;">
+                      แบนเนอร์หน้าแรก (Hero)
+                    </button>
+                    <button type="button" class="btn-chip" id="btn-preview-tab-profile" onclick="switchPreviewCard('profile')" style="font-size:0.75rem; padding:4px 10px; border-radius:6px; cursor:pointer;">
+                      การ์ดประวัติส่วนตัว (หน้านี้ด้วย) 👤
+                    </button>
+                    <button type="button" class="btn-chip active" id="btn-preview-tab-both" onclick="switchPreviewCard('both')" style="font-size:0.75rem; padding:4px 10px; border-radius:6px; cursor:pointer; background:var(--accent-cyan); color:#000; font-weight:700;">
+                      ดูคู่กันทั้ง 2 ส่วน ↔️
+                    </button>
+                  </div>
+                </div>
+
+                <div id="preview-cards-container" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap:20px; align-items:start;">
+                  <!-- 1. Hero Banner Preview -->
+                  <div class="hero-card" id="preview-hero-card" style="margin-bottom:0; box-shadow:none; border:1px solid rgba(197, 155, 109, 0.25);">
+                    <div class="hero-grid">
+                      <div class="hero-info">
+                        <div class="hero-tag">
+                          <span class="pulse-dot"></span>
+                          <span id="preview-hero-tag">คลังเก็บผลงานและใบงานออนไลน์</span>
+                        </div>
+                        <h1 class="hero-title" style="font-size: 1.8rem;">
+                          <span id="preview-hero-greeting">สวัสดีครับ, ผม</span> <span class="highlight" id="preview-hero-name">ภควัต</span> <br>
+                          <span id="preview-hero-sub">ยินดีต้อนรับสู่พื้นที่รวมงาน</span>
+                        </h1>
+                        <p class="hero-desc" id="preview-hero-desc" style="font-size: 0.88rem;">
+                          เว็บไซต์นี้สร้างขึ้นเพื่อรวบรวมและนำเสนอผลงาน ใบงาน การบ้าน และโปรเจกต์ต่าง ๆ ตลอดการศึกษา พร้อมประวัติและทักษะความสามารถ เพื่อเป็นบันทึกการเรียนรู้และการพัฒนาตนเองอย่างต่อเนื่อง
+                        </p>
+
+                        <div class="hero-stats" style="margin-top:1.2rem; padding-top:1rem;">
+                          <div class="stat-item">
+                            <h4 id="preview-stat-works">0</h4>
+                            <p>ใบงานที่บันทึกแล้ว</p>
+                          </div>
+                          <div class="stat-item">
+                            <h4 id="preview-stat-gpa">3.85</h4>
+                            <p id="preview-stat-gpa-label">เกรดเฉลี่ยสะสม (GPA)</p>
+                          </div>
+                          <div class="stat-item">
+                            <h4 id="preview-stat-commit">100%</h4>
+                            <p id="preview-stat-commit-label">ความตั้งใจและส่งตรงเวลา</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="hero-visual" style="flex-direction: column; gap: 14px;">
+                        <div class="avatar-wrapper" id="preview-avatar-wrapper" style="width: 180px; height: 180px;">
+                          <div class="avatar-halo"></div>
+                          <div class="avatar-inner">
+                            <img src="assets/images/avatar.jpg" alt="Avatar Preview" class="avatar-img" id="preview-hero-avatar-img" />
+                          </div>
+                        </div>
+
+                        <div class="hero-badges-row" style="max-width: 320px; gap: 8px;">
+                          <div class="hero-bottom-badge" style="padding: 6px 12px; min-width: 130px;">
+                            <div class="badge-icon purple" id="preview-hero-badge-icon" style="font-size: 0.95rem; width: 32px; height: 32px;">💻</div>
+                            <div class="badge-text">
+                              <div class="title" id="preview-hero-badge-label" style="font-size: 0.68rem;">สาขาการเรียน</div>
+                              <div class="value" id="preview-hero-badge-val" style="font-size: 0.78rem;">วิทย์-คณิต-คอมฯ</div>
+                            </div>
+                          </div>
+
+                          <div class="hero-bottom-badge" style="padding: 6px 12px; min-width: 130px;">
+                            <div class="badge-icon emerald" style="font-size: 0.95rem; width: 32px; height: 32px;">✨</div>
+                            <div class="badge-text">
+                              <div class="title" style="font-size: 0.68rem;">สถานะผลงาน</div>
+                              <div class="value" id="preview-stat-badge-works" style="font-size: 0.78rem;">0 รายการ</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 2. Profile Bio Card Preview (หน้านี้ด้วย - ตรงกับรูปของผู้ใช้ 100%) -->
+                  <div id="preview-profile-card-wrapper" style="display:flex; justify-content:center;">
+                    <div class="profile-card" id="preview-profile-card" style="width: 100%; max-width: 360px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(197, 155, 109, 0.35);">
+                      <div class="profile-avatar-wrapper" id="preview-profile-avatar-wrapper">
+                        <img src="assets/images/avatar.jpg" alt="Profile Avatar Preview" class="profile-avatar" id="preview-profile-avatar-img" />
+                      </div>
+                      <h2 id="preview-profile-name" style="font-size: 1.35rem; margin-bottom: 0.25rem;">ภควัต ศรีรัตน์</h2>
+                      <div class="role" style="color: var(--accent-cyan); font-size: 0.95rem; font-weight: 500; margin-bottom: 1rem;">Student</div>
+
+                      <p class="bio-quote" style="font-size: 0.86rem; color: var(--text-muted); font-style: italic; padding: 0.75rem; background: rgba(255, 255, 255, 0.03); border-radius: var(--radius-sm); margin-bottom: 1.4rem; border-left: 3px solid var(--accent-purple);">
+                        “การเรียนรู้ไม่มีที่สิ้นสุด พัฒนาตนเองผ่านทุกใบงานและลงมือทำอย่างจริงจัง”
+                      </p>
+
+                      <div class="profile-meta-list" style="display: flex; flex-direction: column; gap: 11px; text-align: left; border-top: 1px solid var(--border-subtle); padding-top: 1.1rem;">
+                        <div class="meta-item" style="display: flex; align-items: center; gap: 12px; font-size: 0.86rem;">
+                          <div class="meta-icon">👤</div>
+                          <span class="label" style="color: var(--text-dim); width: 80px;">ชื่อ-สกุล:</span>
+                          <span class="value" style="color: var(--text-main);" id="preview-profile-fullname">นายภควัต ศรีรัตน์</span>
+                        </div>
+                        <div class="meta-item" style="display: flex; align-items: center; gap: 12px; font-size: 0.86rem;">
+                          <div class="meta-icon">🏷️</div>
+                          <span class="label" style="color: var(--text-dim); width: 80px;">ชื่อเล่น:</span>
+                          <span class="value" style="color: var(--text-main);">ซัง</span>
+                        </div>
+                        <div class="meta-item" style="display: flex; align-items: center; gap: 12px; font-size: 0.86rem;">
+                          <div class="meta-icon">🏫</div>
+                          <span class="label" style="color: var(--text-dim); width: 80px;">สถานศึกษา:</span>
+                          <span class="value" style="color: var(--text-main);">วิทยาลัยเทคนิคนครศรีธรรมราช</span>
+                        </div>
+                        <div class="meta-item" style="display: flex; align-items: center; gap: 12px; font-size: 0.86rem;">
+                          <div class="meta-icon">🎓</div>
+                          <span class="label" style="color: var(--text-dim); width: 80px;">ระดับชั้น:</span>
+                          <span class="value" style="color: var(--text-main);">ประกาศนียบัตรวิชาชีพชั้นสูง</span>
+                        </div>
+                        <div class="meta-item" style="display: flex; align-items: center; gap: 12px; font-size: 0.86rem;">
+                          <div class="meta-icon">📍</div>
+                          <span class="label" style="color: var(--text-dim); width: 80px;">ที่อยู่:</span>
+                          <span class="value" style="color: var(--text-main);">นครศรีธรรมราช</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Edit Form -->
+              <form id="hero-settings-form" style="max-width: 780px;" onsubmit="handleHeroSave(event)">
+                <!-- 0. Hero Banner Background (Image & Color Customization) -->
+                <div style="background: rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:14px; padding:18px; margin-bottom: 1.75rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div style="font-weight:700; font-size:0.95rem; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                      <span>🖼️</span> ภาพพื้นหลังแบนเนอร์ & ปรับแต่งสีพื้นหลัง (Hero Banner Background)
+                    </div>
+                    <button type="button" id="btn-clear-banner-img" onclick="clearBannerImage()" style="display:none; font-size:0.8rem; background:none; border:none; color:#ef4444; cursor:pointer; text-decoration:underline;">
+                      ✕ ลบรูปแบนเนอร์ (ใช้เฉพาะสี)
+                    </button>
+                  </div>
+
+                  <!-- Upload Zone for Banner Image -->
+                  <div class="image-upload-zone" id="hero-banner-dropzone" style="min-height: 120px; padding: 16px; text-align: center; margin-bottom: 14px; position:relative; overflow:hidden;">
+                    <input type="file" id="hero-banner-file" accept="image/*" onchange="handleHeroBannerUpload(this)" />
+                    <div class="upload-placeholder" id="hero-banner-placeholder">
+                      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="1.8">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                      </svg>
+                      <span style="font-size:0.92rem; font-weight:600;">คลิกหรือลากไฟล์ภาพแบนเนอร์มาวางที่นี่</span>
+                      <small style="color: var(--text-dim); font-size: 0.78rem;">แนะนำภาพแนวนอน (สัดส่วนประมาณ 16:9 หรือ 1200x500px, รองรับ JPG, PNG, WebP)</small>
+                    </div>
+                    <img id="hero-banner-thumb" class="upload-preview" alt="ตัวอย่างภาพแบนเนอร์" style="max-height: 140px; width:100%; border-radius:10px; object-fit: cover; border: 2px solid var(--accent-cyan);" />
+                  </div>
+
+                  <!-- Color Selection & Presets -->
+                  <div style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap:16px; align-items:flex-end;">
+                    <div>
+                      <label class="form-label" style="font-size:0.8rem; margin-bottom:6px;">🎨 โทนสีพื้นหลัง (Background Color / Tint)</label>
+                      <div style="display:flex; gap:8px; align-items:center;">
+                        <input type="color" id="input-hero-banner-color-picker" value="#201812" onchange="onBannerColorPickerChange(this.value)" style="width:42px; height:38px; border:1px solid var(--border-color); border-radius:8px; background:transparent; cursor:pointer; padding:2px;" />
+                        <input type="text" id="input-hero-banner-bg" class="form-input" placeholder="#201812 หรือปล่อยว่าง" oninput="updateHeroPreview()" style="font-family:monospace; font-size:0.88rem;" />
+                      </div>
+                      <!-- Preset Chips -->
+                      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+                        <button type="button" class="btn-chip" onclick="setBannerBgPreset('#201812')" style="font-size:0.75rem; padding:3px 8px; border-radius:6px; background:#201812; color:#ffdfb3; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">🟤 น้ำตาลเริ่มต้น</button>
+                        <button type="button" class="btn-chip" onclick="setBannerBgPreset('#0f0f12')" style="font-size:0.75rem; padding:3px 8px; border-radius:6px; background:#0f0f12; color:#fff; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">⚫ ดำมิดไนท์</button>
+                        <button type="button" class="btn-chip" onclick="setBannerBgPreset('#0b1329')" style="font-size:0.75rem; padding:3px 8px; border-radius:6px; background:#0b1329; color:#93c5fd; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">🔵 กรมท่าไซเบอร์</button>
+                        <button type="button" class="btn-chip" onclick="setBannerBgPreset('#160e24')" style="font-size:0.75rem; padding:3px 8px; border-radius:6px; background:#160e24; color:#d8b4fe; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">🟣 ม่วงกาแล็กซี</button>
+                        <button type="button" class="btn-chip" onclick="setBannerBgPreset('#061c16')" style="font-size:0.75rem; padding:3px 8px; border-radius:6px; background:#061c16; color:#6ee7b7; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">🟢 เขียวมรกต</button>
+                        <button type="button" class="btn-chip" onclick="setBannerBgPreset('')" style="font-size:0.75rem; padding:3px 8px; border-radius:6px; background:rgba(255,255,255,0.06); color:var(--text-muted); border:1px solid var(--border-color); cursor:pointer;">🔄 ค่าเริ่มต้นระบบ</button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <label class="form-label" for="input-hero-banner-overlay" style="font-size:0.8rem; margin-bottom:0;">ความเข้มเงาดำคลุมภาพ (Overlay Darkness)</label>
+                        <span id="hero-overlay-val-text" style="font-size:0.8rem; font-weight:700; color:var(--accent-cyan);">70%</span>
+                      </div>
+                      <input type="range" id="input-hero-banner-overlay" min="10" max="95" value="70" step="5" class="form-range" oninput="onOverlaySliderInput(this.value)" style="width:100%; accent-color:var(--accent-cyan); cursor:pointer;" />
+                      <small style="color: var(--text-dim); font-size: 0.74rem; display:block; margin-top:4px;">
+                        ช่วยให้ตัวหนังสือสีขาวและสีทองอ่านง่าย ชัดเจน ไม่กลืนไปกับรูปภาพ
+                      </small>
+                    </div>
+                  </div>
+
+                  <!-- Banner Height & Sizing Control -->
+                  <div style="border-top:1px solid rgba(255,255,255,0.06); margin-top:14px; padding-top:14px; display:grid; grid-template-columns: 1.1fr 0.9fr; gap:16px; align-items:flex-start;">
+                    <div>
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <label class="form-label" for="input-hero-banner-height" style="font-size:0.8rem; margin-bottom:0;">📐 ปรับความสูงแบนเนอร์ (Banner Height)</label>
+                        <span id="hero-banner-height-val-text" style="font-size:0.8rem; font-weight:700; color:var(--accent-cyan);">อัตโนมัติ (Default)</span>
+                      </div>
+                      <input type="range" id="input-hero-banner-height" min="320" max="750" value="420" step="10" class="form-range" oninput="onBannerHeightSliderInput(this.value)" style="width:100%; accent-color:var(--accent-cyan); cursor:pointer;" />
+                      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
+                        <button type="button" class="btn-chip" onclick="setBannerHeightPreset('')" style="font-size:0.73rem; padding:2px 8px; border-radius:6px; background:rgba(255,255,255,0.06); color:var(--text-muted); border:1px solid var(--border-color); cursor:pointer;">อัตโนมัติ</button>
+                        <button type="button" class="btn-chip" onclick="setBannerHeightPreset('380')" style="font-size:0.73rem; padding:2px 8px; border-radius:6px; background:rgba(255,255,255,0.06); color:var(--text-main); border:1px solid var(--border-color); cursor:pointer;">กะทัดรัด (380px)</button>
+                        <button type="button" class="btn-chip" onclick="setBannerHeightPreset('460')" style="font-size:0.73rem; padding:2px 8px; border-radius:6px; background:rgba(255,255,255,0.06); color:var(--text-main); border:1px solid var(--border-color); cursor:pointer;">มาตรฐาน (460px)</button>
+                        <button type="button" class="btn-chip" onclick="setBannerHeightPreset('560')" style="font-size:0.73rem; padding:2px 8px; border-radius:6px; background:rgba(255,255,255,0.06); color:var(--text-main); border:1px solid var(--border-color); cursor:pointer;">ขยายใหญ่ (560px)</button>
+                        <button type="button" class="btn-chip" onclick="setBannerHeightPreset('680')" style="font-size:0.73rem; padding:2px 8px; border-radius:6px; background:rgba(255,255,255,0.06); color:var(--text-main); border:1px solid var(--border-color); cursor:pointer;">ใหญ่พิเศษ (680px)</button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="form-label" for="select-hero-banner-fit" style="font-size:0.8rem; margin-bottom:6px;">🖼️ รูปแบบการแสดงผลภาพแบนเนอร์ (Background Fit)</label>
+                      <select id="select-hero-banner-fit" class="form-select" onchange="updateHeroPreview()" style="font-size:0.85rem; padding:8px 12px; width:100%;">
+                        <option value="cover">เต็มพื้นที่ ขอบไม่แหว่ง (Cover - แนะนำ)</option>
+                        <option value="contain">แสดงครบทั้งภาพ ไม่ตัดขอบ (Contain)</option>
+                        <option value="100% 100%">ยืดเต็มกรอบ (Stretch Fill)</option>
+                      </select>
+                      <small style="color: var(--text-dim); font-size: 0.74rem; display:block; margin-top:4px;">
+                        ปรับให้แบนเนอร์ขยายและแสดงสัดส่วนภาพได้สมบูรณ์ตามที่ต้องการ
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 1. Avatar Image Upload & Scaling -->
+                <div style="background: rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:14px; padding:18px; margin-bottom: 1.75rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div style="font-weight:700; font-size:0.95rem; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                      <span>👤</span> รูปโปรไฟล์ & ปรับขนาดขยายรูป (Avatar Image & Sizing)
+                    </div>
+                    <button type="button" id="btn-clear-avatar-img" onclick="clearAvatarImage()" style="display:none; font-size:0.8rem; background:none; border:none; color:#ef4444; cursor:pointer; text-decoration:underline;">
+                      ✕ ลบรูปภาพ (ใช้รูปเริ่มต้น)
+                    </button>
+                  </div>
+                  
+                  <div class="image-upload-zone" id="hero-avatar-dropzone" style="min-height: 120px; padding: 16px; text-align: center; margin-bottom: 14px;">
+                    <input type="file" id="hero-avatar-file" accept="image/*" onchange="handleHeroAvatarUpload(this)" />
+                    <div class="upload-placeholder" id="hero-avatar-placeholder">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="1.8">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                      <span style="font-size:0.92rem; font-weight:600;">คลิกหรือลากไฟล์ภาพโปรไฟล์มาวางที่นี่</span>
+                      <small style="color: var(--text-dim); font-size: 0.78rem;">รองรับไฟล์ JPG, PNG, WebP</small>
+                    </div>
+                    <img id="hero-avatar-thumb" class="upload-preview" alt="ตัวอย่างรูปโปรไฟล์" style="max-height: 110px; width:110px; border-radius:50%; object-fit: cover; border: 3px solid var(--accent-cyan);" />
+                  </div>
+
+                  <!-- Sync Info Badge -->
+                  <div style="background: rgba(197, 155, 109, 0.12); border: 1px solid rgba(197, 155, 109, 0.35); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.82rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.1rem;">⚡</span>
+                    <span><b>ระบบซิงค์รูปภาพอัตโนมัติ:</b> การปรับซูม (Zoom) และเลื่อนจุดโฟกัสขึ้น-ลง (Position Y) จะนำไปใช้กับทั้งรูปโปรไฟล์หน้าแรก และรูปในการ์ดประวัติส่วนตัว (Profile Card - หน้านี้ด้วย) พร้อมกันทันที</span>
+                  </div>
+
+                  <!-- Avatar Size & Zoom Controls -->
+                  <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:14px; display:grid; grid-template-columns: 1.1fr 1fr 1fr; gap:16px;">
+                    <div>
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <label class="form-label" for="input-hero-avatar-size" style="font-size:0.78rem; margin-bottom:0;">🔘 ขนาดกรอบรูปโปรไฟล์ (Frame Size)</label>
+                        <span id="hero-avatar-size-val-text" style="font-size:0.8rem; font-weight:700; color:var(--accent-cyan);">300 px</span>
+                      </div>
+                      <input type="range" id="input-hero-avatar-size" min="180" max="400" value="300" step="10" class="form-range" oninput="onAvatarSizeSliderInput(this.value)" style="width:100%; accent-color:var(--accent-cyan); cursor:pointer;" />
+                      <div style="display:flex; gap:4px; flex-wrap:wrap; margin-top:6px;">
+                        <button type="button" class="btn-chip" onclick="setAvatarSizePreset('220')" style="font-size:0.72rem; padding:2px 6px; border-radius:5px; background:rgba(255,255,255,0.06); color:var(--text-main); border:1px solid var(--border-color); cursor:pointer;">220px</button>
+                        <button type="button" class="btn-chip" onclick="setAvatarSizePreset('260')" style="font-size:0.72rem; padding:2px 6px; border-radius:5px; background:rgba(255,255,255,0.06); color:var(--text-main); border:1px solid var(--border-color); cursor:pointer;">260px</button>
+                        <button type="button" class="btn-chip" onclick="setAvatarSizePreset('300')" style="font-size:0.72rem; padding:2px 6px; border-radius:5px; background:rgba(255,255,255,0.06); color:var(--text-main); border:1px solid var(--border-color); cursor:pointer;">300px</button>
+                        <button type="button" class="btn-chip" onclick="setAvatarSizePreset('350')" style="font-size:0.72rem; padding:2px 6px; border-radius:5px; background:rgba(255,255,255,0.06); color:var(--text-main); border:1px solid var(--border-color); cursor:pointer;">350px</button>
+                        <button type="button" class="btn-chip" onclick="setAvatarSizePreset('380')" style="font-size:0.72rem; padding:2px 6px; border-radius:5px; background:rgba(255,255,255,0.06); color:var(--text-main); border:1px solid var(--border-color); cursor:pointer;">380px</button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <label class="form-label" for="input-hero-avatar-zoom" style="font-size:0.78rem; margin-bottom:0;">🔍 ซูมขยายรูปภาพ (Zoom Scale)</label>
+                        <span id="hero-avatar-zoom-val-text" style="font-size:0.8rem; font-weight:700; color:var(--accent-cyan);">100%</span>
+                      </div>
+                      <input type="range" id="input-hero-avatar-zoom" min="100" max="250" value="100" step="5" class="form-range" oninput="onAvatarZoomSliderInput(this.value)" style="width:100%; accent-color:var(--accent-cyan); cursor:pointer;" />
+                      <small style="color: var(--text-dim); font-size: 0.72rem; display:block; margin-top:4px;">
+                        ขยายรูปเพื่อเจาะจงใบหน้าหรือปรับให้เต็มวงกลม
+                      </small>
+                    </div>
+
+                    <div>
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <label class="form-label" for="input-hero-avatar-posy" style="font-size:0.78rem; margin-bottom:0;">↕️ จุดโฟกัสภาพขึ้น-ลง (Position Y)</label>
+                        <span id="hero-avatar-posy-val-text" style="font-size:0.8rem; font-weight:700; color:var(--accent-cyan);">50% (กลาง)</span>
+                      </div>
+                      <input type="range" id="input-hero-avatar-posy" min="0" max="100" value="50" step="5" class="form-range" oninput="onAvatarPosYSliderInput(this.value)" style="width:100%; accent-color:var(--accent-cyan); cursor:pointer;" />
+                      <small style="color: var(--text-dim); font-size: 0.72rem; display:block; margin-top:4px;">
+                        เลื่อนตำแหน่งภาพขึ้น-ลง ให้ตำแหน่งใบหน้าอยู่ตรงกลางพอดี
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. Hero Badge & Greetings -->
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                  <label class="form-label" for="input-hero-tag">ป้ายข้อความขนาดเล็กด้านบน (Hero Badge Tag)</label>
+                  <input type="text" id="input-hero-tag" class="form-input" placeholder="เช่น คลังเก็บผลงานและใบงานออนไลน์" oninput="updateHeroPreview()" />
+                </div>
+
+                <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom: 1.25rem;">
+                  <div class="form-group">
+                    <label class="form-label" for="input-hero-greeting">คำทักทายขึ้นต้น</label>
+                    <input type="text" id="input-hero-greeting" class="form-input" placeholder="เช่น สวัสดีครับ, ผม หรือ ยินดีต้อนรับ" oninput="updateHeroPreview()" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="input-hero-name">ชื่อหลัก (ตัวหนาสีทองไฮไลต์) *</label>
+                    <input type="text" id="input-hero-name" class="form-input" placeholder="เช่น ภควัต หรือชื่อของคุณ" required oninput="updateHeroPreview()" />
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                  <label class="form-label" for="input-hero-sub">คำโปรยบรรทัดที่ 2</label>
+                  <input type="text" id="input-hero-sub" class="form-input" placeholder="เช่น ยินดีต้อนรับสู่พื้นที่รวมงาน" oninput="updateHeroPreview()" />
+                </div>
+
+                <!-- 3. Hero Description / Bio -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                  <label class="form-label" for="input-hero-desc">ข้อความแนะนำตัว / คำอธิบายเว็บไซต์ (Hero Bio / Description)</label>
+                  <textarea id="input-hero-desc" class="form-textarea" rows="3" placeholder="ระบุวัตถุประสงค์เว็บไซต์ หรือแนะนำตนเองสั้น ๆ" oninput="updateHeroPreview()"></textarea>
+                </div>
+
+                <!-- 4. Floating Badge (Top) -->
+                <div style="background: rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:12px; padding:14px; margin-bottom: 1.5rem;">
+                  <div style="font-weight:700; font-size:0.9rem; margin-bottom:10px; color:var(--text-main);">
+                    🏷️ ป้ายข้อมูลสาขาวิชา (Hero Info Badge)
+                  </div>
+                  <div style="display:grid; grid-template-columns: 80px 1fr 1.5fr; gap:12px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label class="form-label" for="input-hero-major-icon" style="font-size:0.78rem;">ไอคอน</label>
+                      <input type="text" id="input-hero-major-icon" class="form-input" maxlength="2" placeholder="💻" oninput="updateHeroPreview()" style="text-align:center;" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label class="form-label" for="input-hero-major-label" style="font-size:0.78rem;">หัวข้อป้าย</label>
+                      <input type="text" id="input-hero-major-label" class="form-input" placeholder="เช่น สาขาการเรียน" oninput="updateHeroPreview()" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label class="form-label" for="input-hero-major-val" style="font-size:0.78rem;">ข้อความในป้าย</label>
+                      <input type="text" id="input-hero-major-val" class="form-input" placeholder="เช่น วิทย์-คณิต-คอมฯ หรือ เทคโนโลยีสารสนเทศ" oninput="updateHeroPreview()" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 5. Hero Stats -->
+                <div style="background: rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:12px; padding:14px; margin-bottom: 1.75rem;">
+                  <div style="font-weight:700; font-size:0.9rem; margin-bottom:10px; color:var(--text-main);">
+                    📊 ตัวเลขสถิติผลการเรียน & การส่งงาน
+                  </div>
+                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                    <div>
+                      <label class="form-label" for="input-hero-gpa" style="font-size:0.8rem;">เกรดเฉลี่ย (GPA)</label>
+                      <input type="text" id="input-hero-gpa" class="form-input" placeholder="เช่น 3.85" oninput="updateHeroPreview()" style="margin-bottom:8px;" />
+                      <label class="form-label" for="input-hero-gpa-label" style="font-size:0.78rem; color:var(--text-dim);">ป้ายกำกับ GPA</label>
+                      <input type="text" id="input-hero-gpa-label" class="form-input" placeholder="เกรดเฉลี่ยสะสม (GPA)" oninput="updateHeroPreview()" />
+                    </div>
+                    <div>
+                      <label class="form-label" for="input-hero-commit" style="font-size:0.8rem;">สถิติความตั้งใจ / ส่งตรงเวลา</label>
+                      <input type="text" id="input-hero-commit" class="form-input" placeholder="เช่น 100%" oninput="updateHeroPreview()" style="margin-bottom:8px;" />
+                      <label class="form-label" for="input-hero-commit-label" style="font-size:0.78rem; color:var(--text-dim);">ป้ายกำกับ</label>
+                      <input type="text" id="input-hero-commit-label" class="form-input" placeholder="ความตั้งใจและส่งตรงเวลา" oninput="updateHeroPreview()" />
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                  <button type="submit" class="btn btn-cyan" style="padding:10px 24px; font-size:0.95rem; font-weight:600;">
+                    💾 บันทึกข้อมูลแบนเนอร์หน้าแรก
+                  </button>
+                  <button type="button" class="btn btn-secondary" onclick="resetHeroDefaults()" style="padding:10px 18px; font-size:0.88rem;">
+                    🔄 รีเซ็ตกลับเป็นค่าเริ่มต้น
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- ================= TAB 5: BACKUP & VERCEL DEPLOY ================= -->
+          <div class="admin-tab-content" id="admin-tab-backup" style="display:none;">
+            <div class="content-panel">
+              <div class="panel-header" style="justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                <div>
+                  <h3 class="panel-title" style="display:flex; align-items:center; gap:8px;">
+                    <span>💾</span> ระบบสำรองข้อมูล (Backup & Restore) & เชื่อมต่อ Vercel
+                  </h3>
+                  <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">
+                    ดาวน์โหลดไฟล์สำรองข้อมูลทั้งหมด (.json), กู้คืนข้อมูลเก่า และคู่มือการเชื่อมต่อขึ้นโดเมน .vercel.app
+                  </p>
+                </div>
+              </div>
+
+              <!-- 1. Vercel Cloud Deployment Card -->
+              <div style="background: linear-gradient(135deg, rgba(20, 14, 10, 0.95), rgba(35, 25, 18, 0.9)); border: 1px solid rgba(197, 155, 109, 0.35); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:1rem;">
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:42px; height:42px; border-radius:10px; background:#000; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.2);">
+                      <svg width="22" height="22" viewBox="0 0 116 100" fill="#fff">
+                        <path d="M57.5 0L115 100H0L57.5 0Z"></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 style="font-size:1.05rem; margin:0; color:#fff; font-weight:700;">
+                        เชื่อมต่อขึ้นโดเมน Vercel (.vercel.app)
+                      </h4>
+                      <span style="font-size:0.8rem; color:#10b981; display:inline-flex; align-items:center; gap:4px; margin-top:2px;">
+                        <span style="width:7px; height:7px; border-radius:50%; background:#10b981; display:inline-block;"></span>
+                        พร้อมเชื่อมต่อทันที (ไฟล์ vercel.json กำหนดค่าเรียบร้อยแล้ว)
+                      </span>
+                    </div>
+                  </div>
+                  <a href="https://vercel.com/new" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="padding:9px 20px; font-size:0.9rem; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                      <polyline points="15 3 21 3 21 9"></polyline>
+                      <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    เปิด Vercel เพื่อ Deploy ทันที
+                  </a>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.3); border-radius:var(--radius-sm); padding:1rem; margin-bottom:1rem; border:1px solid rgba(255,255,255,0.06);">
+                  <div style="font-size:0.88rem; font-weight:600; color:#ffd8a8; margin-bottom:6px;">
+                    📌 วิธีนำขึ้น Vercel ง่ายๆ 3 ขั้นตอน:
+                  </div>
+                  <ol style="margin:0; padding-left:1.25rem; font-size:0.84rem; color:var(--text-muted); line-height:1.7;">
+                    <li>นำโค้ดขึ้น GitHub หรือเข้าเว็บ <b>vercel.com</b> แล้วล็อกอินด้วย GitHub</li>
+                    <li>กดปุ่ม <b>"Add New..." ➔ "Project"</b> แล้วเลือกโฟลเดอร์หรือ Repository ของคุณ</li>
+                    <li>กดปุ่ม <b>"Deploy"</b> รอระบบประมวลผลประมาณ 20 วินาที จะได้ลิงก์โดเมนจริง เช่น <code style="background:rgba(0,0,0,0.5); padding:2px 6px; border-radius:4px; color:#38bdf8;">https://pakawat-portfolio.vercel.app</code> ส่งอาจารย์ได้ทันทีครับ!</li>
+                  </ol>
+                </div>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                  <button type="button" class="btn btn-secondary" onclick="exportFullBackup()" style="font-size:0.85rem; padding:8px 16px;">
+                    📥 สำรองข้อมูลไว้ก่อน Deploy
+                  </button>
+                  <a href="../pakawat-site.zip" download="pakawat-site.zip" class="btn btn-secondary" style="font-size:0.85rem; padding:8px 16px; text-decoration:none;">
+                    📦 ดาวน์โหลดไฟล์ ZIP ของเว็บ (สำหรับอัปโหลด)
+                  </a>
+                </div>
+              </div>
+
+              <!-- 2. Export Backup Data -->
+              <div style="background: rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+                  <h4 style="font-size:1rem; color:var(--accent-cyan); margin:0; display:flex; align-items:center; gap:8px;">
+                    <span>📥</span> ส่งออกข้อมูลสำรองทั้งหมด (Export Full Backup)
+                  </h4>
+                  <span style="font-size:0.8rem; color:var(--text-dim);">บันทึกข้อมูลทุกส่วนรวมทั้งรูปภาพและประวัติ</span>
+                </div>
+
+                <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.25rem;">
+                  ดาวน์โหลดข้อมูลทั้งหมดในระบบออกมาเป็นไฟล์ <b>.json</b> เก็บไว้ในคอมพิวเตอร์ของคุณ เมื่อเปลี่ยนเครื่องหรือนำเว็บขึ้น Vercel สามารถใช้ไฟล์นี้กู้คืนข้อมูลกลับมาได้ 100%
+                </p>
+
+                <!-- Current Data Stats -->
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:12px; margin-bottom:1.5rem;">
+                  <div style="background:rgba(0,0,0,0.25); padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+                    <div style="font-size:0.75rem; color:var(--text-dim);">ใบงานในระบบ</div>
+                    <div style="font-size:1.2rem; font-weight:700; color:#fff;" id="backup-count-works">0 รายการ</div>
+                  </div>
+                  <div style="background:rgba(0,0,0,0.25); padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+                    <div style="font-size:0.75rem; color:var(--text-dim);">ประวัติการศึกษา</div>
+                    <div style="font-size:1.2rem; font-weight:700; color:#fff;" id="backup-count-edu">3 ระดับ</div>
+                  </div>
+                  <div style="background:rgba(0,0,0,0.25); padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+                    <div style="font-size:0.75rem; color:var(--text-dim);">ทักษะความสามารถ</div>
+                    <div style="font-size:1.2rem; font-weight:700; color:#fff;" id="backup-count-skills">5 ทักษะ</div>
+                  </div>
+                  <div style="background:rgba(0,0,0,0.25); padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+                    <div style="font-size:0.75rem; color:var(--text-dim);">โปรไฟล์ & แบนเนอร์</div>
+                    <div style="font-size:1.2rem; font-weight:700; color:#10b981;">สมบูรณ์</div>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                  <button type="button" class="btn btn-primary" onclick="exportFullBackup()" style="padding:10px 22px; font-size:0.92rem; font-weight:700;">
+                    📥 ดาวน์โหลดไฟล์สำรองข้อมูล (.json)
+                  </button>
+                  <button type="button" class="btn btn-secondary" onclick="copyBackupJson()" style="padding:10px 18px; font-size:0.88rem;">
+                    📋 คัดลอกโค้ดสำรอง (JSON) ลงคลิปบอร์ด
+                  </button>
+                </div>
+              </div>
+
+              <!-- 3. Import / Restore Backup Data -->
+              <div style="background: rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+                  <h4 style="font-size:1rem; color:var(--accent-pink); margin:0; display:flex; align-items:center; gap:8px;">
+                    <span>📤</span> กู้คืนข้อมูลจากไฟล์สำรอง (Import / Restore)
+                  </h4>
+                  <span style="font-size:0.8rem; color:var(--text-dim);">นำเข้าไฟล์ .json ที่เคยสำรองไว้</span>
+                </div>
+
+                <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.25rem;">
+                  เลือกไฟล์ <b>.json</b> ที่เคยดาวน์โหลดไว้ ระบบจะตรวจสอบความถูกต้องและกู้คืนข้อมูลใบงาน, โปรไฟล์, แบนเนอร์ และประวัติการศึกษากลับมาทั้งหมด
+                </p>
+
+                <!-- File Input Dropzone -->
+                <div style="border: 2px dashed rgba(197, 155, 109, 0.35); border-radius: var(--radius-md); padding: 2rem 1.5rem; text-align: center; background: rgba(0,0,0,0.2); margin-bottom: 1rem; position:relative;">
+                  <input type="file" id="backup-json-file" accept=".json,application/json" onchange="handleBackupFileSelect(this)" style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;" />
+                  <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span style="font-weight:600; font-size:0.95rem; color:#fff;">คลิกเพื่อเลือกไฟล์สำรอง (.json) หรือลากไฟล์มาวางที่นี่</span>
+                    <small style="color:var(--text-dim); font-size:0.8rem;">รองรับเฉพาะไฟล์ .json ที่ส่งออกจากระบบนี้เท่านั้น</small>
+                  </div>
+                </div>
+
+                <!-- Preview Restore Card (Hidden until file selected) -->
+                <div id="restore-preview-card" style="display:none; background:rgba(16, 185, 129, 0.08); border:1px solid rgba(16, 185, 129, 0.35); border-radius:var(--radius-sm); padding:1rem; margin-bottom:1.25rem;">
+                  <div style="font-weight:700; color:#10b981; font-size:0.9rem; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                    <span>✅</span> ตรวจพบข้อมูลสำรองที่ถูกต้อง พร้อมกู้คืน:
+                  </div>
+                  <div id="restore-preview-details" style="font-size:0.84rem; color:var(--text-main); line-height:1.6; margin-bottom:12px;"></div>
+                  <button type="button" class="btn btn-primary" onclick="confirmRestoreBackup()" style="background:#10b981; border:none; padding:8px 20px; font-size:0.9rem;">
+                    ⚡ ยืนยันการกู้คืนข้อมูลทันที
+                  </button>
+                </div>
+              </div>
+
+              <!-- 4. Local Snapshots -->
+              <div style="background: rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.5rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+                  <h4 style="font-size:1rem; color:var(--accent-cyan); margin:0; display:flex; align-items:center; gap:8px;">
+                    <span>🕒</span> จุดสำรองข้อมูลด่วนในเครื่อง (Local Snapshots)
+                  </h4>
+                  <button type="button" class="btn btn-secondary" onclick="createLocalSnapshot()" style="font-size:0.82rem; padding:6px 14px;">
+                    ➕ บันทึกจุดสำรองเดี๋ยวนี้
+                  </button>
+                </div>
+
+                <div id="local-snapshots-container">
+                  <div style="font-size:0.84rem; color:var(--text-dim); text-align:center; padding:1.5rem;">
+                    ยังไม่มีจุดสำรองข้อมูลด่วน กดปุ่ม "บันทึกจุดสำรองเดี๋ยวนี้" เพื่อบันทึกสถานะปัจจุบันไว้ในเบราว์เซอร์
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Site Footer -->
+      <footer class="site-footer" style="margin-top:3rem;">
+        <div class="container footer-content">
+          <div>
+            <strong>ภควัต (Pakawat) Portfolio | หน้าผู้ดูแลระบบ (Admin)</strong>
+            <div style="font-size: 0.8rem; margin-top: 4px; color: var(--text-dim);">
+              ระบบจัดการผลงาน ข้อมูลจะถูกจัดเก็บในเครื่องอย่างปลอดภัย
+            </div>
+          </div>
+          <div class="footer-links">
+            <a href="index.html" class="footer-link">👁️ ไปหน้าเว็บคุณครู (index.html)</a>
+            <button onclick="openChangePinModal()" class="footer-link"
+              style="background:none; border:none; cursor:pointer;">🔑 เปลี่ยนรหัสผ่าน</button>
+            <button onclick="adminLogout()" class="footer-link"
+              style="background:none; border:none; cursor:pointer; color:#f87171;">🚪 ออกจากระบบ</button>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+
+  </div>
+
+  <!-- ================= MODAL: ADD NEW WORKSHEET ================= -->
+  <div class="modal-backdrop" id="add-worksheet-modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>เพิ่มใบงานใหม่ในระบบ</h3>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <form id="add-worksheet-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="add-title">ชื่อใบงาน / หัวข้อผลงาน *</label>
+            <input type="text" id="add-title" class="form-input" placeholder="เช่น ใบงานที่ 4: การสร้างเว็บด้วย Next.js"
+              required autofocus />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                style="display:inline-block; vertical-align:-2px; margin-right:4px;">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              วันที่ทำใบงาน (เลือกจากปฏิทิน) *
+            </label>
+
+            <div class="inline-calendar" id="add-calendar-picker"></div>
+            <input type="hidden" id="add-date" required />
+            <div class="selected-date-display">
+              <span>📅 วันที่เลือก:</span> <strong id="add-date-label">-</strong>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="add-link">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                style="display:inline-block; vertical-align:-2px; margin-right:4px;">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+              </svg>
+              ลิงก์ผลงานภายนอก / ไฟล์งาน (Google Drive, GitHub, Canva, เว็บไซต์ ฯลฯ)
+            </label>
+            <input type="url" id="add-link" class="form-input"
+              placeholder="https://drive.google.com/... หรือ https://github.com/..." />
+            <small
+              style="color: var(--text-dim); font-size: 0.8rem; display: block; margin-top: 4px;">ใส่ลิงก์เพื่อให้คุณครูสามารถคลิกเข้าไปดูไฟล์งานจริงหรือสไลด์ผลงานได้</small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">รูปภาพใบงาน (ความละเอียดสูง คมชัดเต็มร้อย)</label>
+            <div class="image-upload-zone" id="add-image-dropzone">
+              <input type="file" id="add-image-file" accept="image/*" />
+              <div class="upload-placeholder" id="add-upload-placeholder">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)"
+                  stroke-width="1.8">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span>คลิกหรือลากไฟล์รูปภาพมาวางที่นี่</span>
+                <small style="color: var(--text-dim); font-size: 0.8rem;">รองรับไฟล์รูปภาพ JPG, PNG, WebP</small>
+              </div>
+              <img id="add-image-preview" class="upload-preview" alt="ตัวอย่างรูปใบงาน" />
+            </div>
+            <button type="button" id="btn-remove-add-image" class="btn-remove-preview"
+              style="display: none; margin-top:8px;">ยกเลิกรูปนี้</button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-modal-cancel">ยกเลิก</button>
+          <button type="submit" class="btn btn-cyan">บันทึกใบงานใหม่</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: EDIT WORKSHEET ================= -->
+  <div class="modal-backdrop" id="edit-worksheet-modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>แก้ไขข้อมูลใบงาน</h3>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <form id="edit-worksheet-form">
+        <input type="hidden" id="edit-work-id" />
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="edit-title">ชื่อใบงาน / หัวข้อผลงาน *</label>
+            <input type="text" id="edit-title" class="form-input" required autofocus />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                style="display:inline-block; vertical-align:-2px; margin-right:4px;">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              วันที่ทำใบงาน (เลือกจากปฏิทิน) *
+            </label>
+
+            <div class="inline-calendar" id="edit-calendar-picker"></div>
+            <input type="hidden" id="edit-date" required />
+            <div class="selected-date-display">
+              <span>📅 วันที่เลือก:</span> <strong id="edit-date-label">-</strong>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-link">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                style="display:inline-block; vertical-align:-2px; margin-right:4px;">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+              </svg>
+              ลิงก์ผลงานภายนอก / ไฟล์งาน (Google Drive, GitHub, Canva ฯลฯ)
+            </label>
+            <input type="url" id="edit-link" class="form-input" placeholder="https://..." />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">เปลี่ยนรูปภาพใบงาน (ถ้าไม่เปลี่ยนจะใช้รูปเดิม)</label>
+            <div class="image-upload-zone" id="edit-image-dropzone">
+              <input type="file" id="edit-image-file" accept="image/*" />
+              <div class="upload-placeholder" id="edit-upload-placeholder" style="display: none;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)"
+                  stroke-width="1.8">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span>คลิกเพื่อเปลี่ยนรูปภาพใบงาน</span>
+              </div>
+              <img id="edit-image-preview" class="upload-preview has-image" alt="ตัวอย่างภาพใบงาน" />
+            </div>
+            <small
+              style="color: var(--text-dim); font-size: 0.8rem; display: block; margin-top: 4px;">คลิกที่กรอบภาพเพื่ออัปโหลดภาพใบงานใหม่</small>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-modal-cancel">ยกเลิก</button>
+          <button type="submit" class="btn btn-cyan">บันทึกการแก้ไข</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: EDIT EDUCATION & LOGO ================= -->
+  <div class="modal-backdrop" id="edit-education-modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>เปลี่ยนโลโก้ & ข้อมูลสถานศึกษา</h3>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <form id="edit-education-form">
+        <input type="hidden" id="edit-edu-id" />
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="edit-edu-title">ระดับการศึกษา *</label>
+            <input type="text" id="edit-edu-title" class="form-input" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-edu-school">ชื่อสถานศึกษา / โรงเรียน *</label>
+            <input type="text" id="edit-edu-school" class="form-input" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-edu-desc">รายละเอียด / แผนการเรียน / สาขาวิชา</label>
+            <textarea id="edit-edu-desc" class="form-textarea" rows="2"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ตราสัญลักษณ์ / ตราโรงเรียน / โลโก้สถานศึกษา (ความละเอียดคมชัด)</label>
+            <div class="image-upload-zone" style="min-height: 140px;">
+              <input type="file" id="edit-edu-image-file" accept="image/*" />
+              <div class="upload-placeholder" id="edit-edu-upload-placeholder" style="display: none;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                  <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                </svg>
+                <span>คลิกเพื่ออัปโหลดโลโก้โรงเรียน</span>
+              </div>
+              <div style="width: 100%; display: flex; justify-content: center; align-items: center; padding: 10px;">
+                <img id="edit-edu-image-preview" class="upload-preview has-image" alt="ตัวอย่างโลโก้โรงเรียน" />
+              </div>
+            </div>
+            <small style="color: var(--text-dim); font-size: 0.8rem; display: block; margin-top: 6px;">รองรับไฟล์โลโก้
+              PNG พื้นหลังโปร่งใส, JPG, SVG, WebP</small>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-modal-cancel">ยกเลิก</button>
+          <button type="submit" class="btn btn-cyan">บันทึกข้อมูลและโลโก้</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: CHANGE ADMIN PIN ================= -->
+  <div class="modal-backdrop" id="change-pin-modal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-sm">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.3rem;">🔑</span>
+          <h3>เปลี่ยนรหัสผ่าน Admin</h3>
+        </div>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <form id="change-pin-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="current-pin-input">รหัสผ่านปัจจุบัน *</label>
+            <input type="password" id="current-pin-input" class="form-input" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="new-pin-input">รหัสผ่านใหม่ (อย่างน้อย 4 ตัวอักษร) *</label>
+            <input type="password" id="new-pin-input" class="form-input" minlength="4" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="confirm-pin-input">ยืนยันรหัสผ่านใหม่อีกครั้ง *</label>
+            <input type="password" id="confirm-pin-input" class="form-input" minlength="4" required />
+          </div>
+
+          <div id="change-pin-error" class="login-error-msg" style="display:none;"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-modal-cancel">ยกเลิก</button>
+          <button type="submit" class="btn btn-cyan">บันทึกรหัสผ่านใหม่</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= LIGHTBOX: FULLSCREEN IMAGE VIEWER ================= -->
+  <div class="lightbox-backdrop" id="image-lightbox-modal" aria-hidden="true">
+    <div class="lightbox-toolbar">
+      <span class="lightbox-title" id="lightbox-image-title">รูปภาพใบงาน</span>
+      <div class="lightbox-actions">
+        <button class="lightbox-btn" id="btn-zoom-in" title="ซูมขยาย (+)">ขยาย +</button>
+        <button class="lightbox-btn" id="btn-zoom-out" title="ซูมย่อ (-)">ย่อ -</button>
+        <button class="lightbox-btn" id="btn-zoom-reset" title="ขนาดปกติ 100%">100%</button>
+        <button class="lightbox-btn close" id="btn-close-lightbox" title="ปิดหน้าต่าง">&times;</button>
+      </div>
+    </div>
+    <div class="lightbox-content" id="lightbox-container">
+      <img id="lightbox-img" src="" alt="ภาพใบงานขนาดเต็ม" />
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+
+</html>
