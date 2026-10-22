@@ -6,6 +6,7 @@ const DEFAULT_WORKSHEETS = [
   {
     id: "work-1",
     title: "ใบงานที่ 1: การออกแบบและพัฒนาเว็บไซต์ด้วย HTML5 & CSS3",
+    workshopNum: "Workshop 1",
     subject: "วิทยาการคำนวณ & การพัฒนาเว็บ",
     category: "web",
     date: "15 พฤศจิกายน 2024",
@@ -28,6 +29,7 @@ const DEFAULT_WORKSHEETS = [
   {
     id: "work-2",
     title: "ใบงานที่ 2: การออกแบบ User Interface & Wireframe แอปพลิเคชันมือถือ",
+    workshopNum: "Workshop 2",
     subject: "การออกแบบและเทคโนโลยี",
     category: "design",
     date: "28 พฤศจิกายน 2024",
@@ -50,6 +52,7 @@ const DEFAULT_WORKSHEETS = [
   {
     id: "work-3",
     title: "ใบงานที่ 3: ระบบตรวจวัดอุณหภูมิและความชื้น IoT ด้วย ESP32",
+    workshopNum: "Workshop 3",
     subject: "โครงงานคอมพิวเตอร์และ IoT",
     category: "tech",
     date: "12 ธันวาคม 2024",
@@ -72,8 +75,9 @@ const DEFAULT_WORKSHEETS = [
   {
     id: "work-4",
     title: "ใบงานที่ 4: การวิเคราะห์ข้อมูลสถิติคะแนนสอบด้วย Python & Pandas",
+    workshopNum: "Workshop 4",
     subject: "วิทยาศาสตร์ข้อมูลเบื้องต้น",
-    category: "tech",
+    category: "code",
     date: "05 มกราคม 2025",
     status: "done",
     statusText: "ส่งแล้ว (รอผลตรวจ)",
@@ -94,6 +98,7 @@ const DEFAULT_WORKSHEETS = [
   {
     id: "work-5",
     title: "ใบงานที่ 5: ออกแบบสื่อโปสเตอร์อินโฟกราฟิก รณรงค์การรู้เท่าทันไซเบอร์",
+    workshopNum: "Workshop 5",
     subject: "การสื่อสารและสารสนเทศ",
     category: "design",
     date: "20 มกราคม 2025",
@@ -116,16 +121,19 @@ const DEFAULT_WORKSHEETS = [
 ];
 
 const DEFAULT_PROFILE = {
-  name: "ภควัต (Pakawat)",
-  fullname: "นายภควัต สกุลวัฒนา",
-  nickname: "วัฒน์ / วัต",
-  role: "นักเรียน / ผู้มีความสนใจด้านเทคโนโลยีและการพัฒนาเว็บ",
-  bio: "มีความชื่นชอบและหลงใหลในการเรียนรู้สิ่งใหม่ ๆ ด้านคอมพิวเตอร์ การเขียนโปรแกรม และการออกแบบกราฟิก มุ่งมั่นสร้างสรรค์ผลงานคุณภาพในทุกใบงาน",
-  school: "โรงเรียนตัวอย่างวิทยาคม (ห้องเรียนพิเศษเทคโนโลยี)",
-  level: "มัธยมศึกษาตอนปลาย (สายการเรียน วิทย์-คณิต-คอมฯ)",
-  email: "pakawat.student@example.com",
-  phone: "089-123-4567",
-  location: "กรุงเทพมหานคร, ประเทศไทย",
+  brandBadge: "P",
+  brandTitle: "ภควัต",
+  brandSubtitle: "Portfolio",
+  name: "ภควัต ศรีรัตน์",
+  fullname: "นายภควัต ศรีรัตน์",
+  nickname: "ซัง",
+  role: "นักศึกษา ปวส. เทคโนโลยีสารสนเทศ",
+  bio: "มีความชื่นชอบและหลงใหลในการเรียนรู้สิ่งใหม่ ๆ ด้านคอมพิวเตอร์ การเขียนโปรแกรม และการพัฒนาเว็บไซต์ มุ่งมั่นสร้างสรรค์ผลงานคุณภาพในทุกใบงาน",
+  school: "วิทยาลัยเทคนิคนครศรีธรรมราช",
+  level: "ประกาศนียบัตรวิชาชีพชั้นสูง (ปวส.)",
+  email: "69319010028@tnk.ac.th",
+  phone: "099-436-2677",
+  location: "นครศรีธรรมราช, ประเทศไทย",
   gpa: "3.85",
   academicYear: "2567 - 2568",
   skills: [
@@ -137,31 +145,31 @@ const DEFAULT_PROFILE = {
   ],
   education: [
     {
-      id: "edu-high",
-      period: "2565 - ปัจจุบัน",
-      title: "ระดับมัธยมศึกษาตอนปลาย",
-      sub: "โรงเรียนตัวอย่างวิทยาคม",
-      desc: "แผนการเรียนวิทยาศาสตร์-คณิตศาสตร์-คอมพิวเตอร์ เน้นโครงงานนวัตกรรมดิจิทัล เกรดเฉลี่ยสะสม 3.85",
-      image: "assets/images/school_high.jpg",
-      caption: "ภาพบรรยากาศอาคารเรียนและห้องปฏิบัติการวิทยาศาสตร์-คอมพิวเตอร์"
-    },
-    {
       id: "edu-junior",
-      period: "2562 - 2564",
+      period: "2561 - 2563",
       title: "ระดับมัธยมศึกษาตอนต้น",
       sub: "โรงเรียนตัวอย่างวิทยาคม",
-      desc: "ผลการเรียนดีเด่น ชนะการแข่งขันโครงงานวิทยาศาสตร์ระดับเขตพื้นที่การศึกษา",
-      image: "assets/images/school_junior.jpg",
-      caption: "ภาพอาคารเรียนระดับมัธยมศึกษาตอนต้นและลานกิจกรรม"
+      desc: "สำเร็จการศึกษาระดับมัธยมศึกษาตอนต้น ด้วยผลการเรียนดีเด่น และร่วมกิจกรรมวิชาการ",
+      logo: "assets/images/logo_school_junior.svg",
+      image: "assets/images/logo_school_junior.svg"
     },
     {
-      id: "edu-primary",
-      period: "2556 - 2561",
-      title: "ระดับประถมศึกษา",
-      sub: "โรงเรียนอนุบาลและประถมศึกษาประจำจังหวัด",
-      desc: "สำเร็จการศึกษาด้วยผลการเรียนยอดเยี่ยม และได้รับรางวัลความประพฤติดี",
-      image: "assets/images/school_primary.jpg",
-      caption: "ภาพอาคารเรียนระดับประถมศึกษาและสนามเด็กเล่น"
+      id: "edu-high",
+      period: "2564 - 2566",
+      title: "ระดับมัธยมศึกษาตอนปลาย",
+      sub: "โรงเรียนตัวอย่างวิทยาคม",
+      desc: "แผนการเรียนวิทยาศาสตร์-คณิตศาสตร์-คอมพิวเตอร์ เน้นโครงงานนวัตกรรมดิจิทัล",
+      logo: "assets/images/logo_school_high.svg",
+      image: "assets/images/logo_school_high.svg"
+    },
+    {
+      id: "edu-vocational",
+      period: "2567 - ปัจจุบัน",
+      title: "ระดับประกาศนียบัตรวิชาชีพชั้นสูง (ปวส.)",
+      sub: "วิทยาลัยเทคนิคนครศรีธรรมราช",
+      desc: "แผนกวิชาเทคโนโลยีสารสนเทศ / คอมพิวเตอร์ มุ่งเน้นการพัฒนาเว็บไซต์ เครือข่าย และระบบดิจิทัล",
+      logo: "assets/images/logo_school_vocational.svg",
+      image: "assets/images/logo_school_vocational.svg"
     }
   ]
 };

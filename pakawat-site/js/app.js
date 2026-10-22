@@ -6,10 +6,39 @@
 const STORAGE_WORKS_KEY = 'pakawat_worksheets_data';
 const STORAGE_THEME_KEY = 'pakawat_theme_pref';
 const STORAGE_PROFILE_KEY = 'pakawat_profile_data';
+const STORAGE_ROLE_KEY = 'pakawat_user_role';
+const STORAGE_PIN_KEY = 'pakawat_admin_pin';
+const DEFAULT_PIN = '1234';
+
+// Real-Time Cross-Tab Synchronization
+const REALTIME_CHANNEL_NAME = 'pakawat_realtime_sync';
+let realtimeChannel = null;
+try {
+  if ('BroadcastChannel' in window) {
+    realtimeChannel = new BroadcastChannel(REALTIME_CHANNEL_NAME);
+  }
+} catch (e) {
+  console.warn('BroadcastChannel error:', e);
+}
+
+function broadcastRealtimeSync(type, payload = {}) {
+  if (realtimeChannel) {
+    try {
+      realtimeChannel.postMessage({
+        type: type,
+        timestamp: Date.now(),
+        ...payload
+      });
+    } catch (e) {
+      console.warn('Error broadcasting sync:', e);
+    }
+  }
+}
 
 // State
 let worksheets = [];
 let profileData = null;
+let currentRole = localStorage.getItem(STORAGE_ROLE_KEY) || 'viewer';
 let currentFilter = 'all';
 let currentSearch = '';
 let currentAddImageBase64 = null;
@@ -32,6 +61,8 @@ const detailModal = document.getElementById('worksheet-detail-modal');
 const addModal = document.getElementById('add-worksheet-modal');
 const editModal = document.getElementById('edit-worksheet-modal');
 const editEduModal = document.getElementById('edit-education-modal');
+const adminLoginModal = document.getElementById('admin-login-modal');
+const changePinModal = document.getElementById('change-pin-modal');
 const lightboxModal = document.getElementById('image-lightbox-modal');
 const lightboxImg = document.getElementById('lightbox-img');
 const lightboxTitle = document.getElementById('lightbox-image-title');
@@ -49,6 +80,129 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   renderAll();
 });
+
+/* ---------------- Role Management (Teacher / Viewer vs Admin) ---------------- */
+function initRole() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const modeParam = urlParams.get('mode');
+  if (modeParam === 'teacher' || modeParam === 'viewer') {
+    currentRole = 'viewer';
+    localStorage.setItem(STORAGE_ROLE_KEY, 'viewer');
+  }
+
+  applyRole(currentRole);
+}
+
+function applyRole(role) {
+  currentRole = role;
+  document.documentElement.setAttribute('data-role', role);
+
+  const navRoleIcon = document.getElementById('nav-role-icon');
+  const navRoleText = document.getElementById('nav-role-text');
+  const modeBadgePill = document.getElementById('mode-badge-pill');
+  const modeDescText = document.getElementById('mode-desc-text');
+  const modeActionsContainer = document.getElementById('mode-actions-container');
+  const statusBar = document.getElementById('mode-status-bar');
+
+  if (role === 'admin') {
+    if (navRoleIcon) navRoleIcon.innerText = '👑';
+    if (navRoleText) navRoleText.innerText = 'โหมด Admin';
+    if (statusBar) statusBar.className = 'mode-status-bar admin';
+    if (modeBadgePill) modeBadgePill.innerHTML = '👑 โหมดผู้ดูแลระบบ (Admin)';
+    if (modeDescText) modeDescText.innerText = 'ปลดล็อกสิทธิ์เต็ม: สามารถเพิ่ม แก้ไข และลบใบงานได้อิสระ';
+    if (modeActionsContainer) {
+      modeActionsContainer.innerHTML = `
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn-mode-toggle outline" onclick="openChangePinModal()">🔑 เปลี่ยนรหัสผ่าน</button>
+          <button type="button" class="btn-mode-toggle" onclick="switchToViewerMode()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            สลับไปโหมดคุณครูตรวจงาน
+          </button>
+        </div>
+      `;
+    }
+  } else {
+    // Viewer / Teacher mode
+    if (navRoleIcon) navRoleIcon.innerText = '👁️';
+    if (navRoleText) navRoleText.innerText = 'โหมดคุณครู';
+    if (statusBar) statusBar.className = 'mode-status-bar viewer';
+    if (modeBadgePill) modeBadgePill.innerHTML = '👁️ โหมดตรวจงาน (คุณครู/ผู้ตรวจ)';
+    if (modeDescText) modeDescText.innerText = 'แสดงผลแบบอ่านอย่างเดียว ป้องกันการแก้ไขหรือลบผลงาน';
+    if (modeActionsContainer) {
+      modeActionsContainer.innerHTML = `
+        <button type="button" class="btn-mode-switch" onclick="openAdminLoginModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          เข้าสู่ระบบผู้ดูแล (Admin)
+        </button>
+      `;
+    }
+  }
+}
+
+window.handleRoleButtonClick = function() {
+  if (currentRole === 'admin') {
+    if (confirm('คุณอยู่ในโหมด Admin ต้องการสลับกลับไปเป็น "โหมดคุณครูตรวจงาน" (อ่านอย่างเดียว) หรือไม่?')) {
+      switchToViewerMode();
+    }
+  } else {
+    openAdminLoginModal();
+  }
+};
+
+window.openAdminLoginModal = function() {
+  const modal = document.getElementById('admin-login-modal');
+  const input = document.getElementById('admin-pin-input');
+  const errorEl = document.getElementById('admin-login-error');
+  if (errorEl) {
+    errorEl.style.display = 'none';
+    errorEl.innerText = '';
+  }
+  if (input) {
+    input.value = '';
+    input.type = 'password';
+  }
+  if (modal) {
+    modal.classList.add('active');
+    setTimeout(() => {
+      if (input) input.focus();
+    }, 100);
+  }
+};
+
+window.switchToViewerMode = function() {
+  currentRole = 'viewer';
+  localStorage.setItem(STORAGE_ROLE_KEY, 'viewer');
+  applyRole('viewer');
+  showToast('สลับเข้าสู่โหมดคุณครูตรวจงาน (อ่านอย่างเดียว ปลอดภัย ไม่มีใครแก้หรือลบงานได้) 👁️');
+};
+
+window.openChangePinModal = function() {
+  const modal = document.getElementById('change-pin-modal');
+  const currInput = document.getElementById('current-pin-input');
+  const newInput = document.getElementById('new-pin-input');
+  const confirmInput = document.getElementById('confirm-pin-input');
+  const errorEl = document.getElementById('change-pin-error');
+  if (errorEl) {
+    errorEl.style.display = 'none';
+    errorEl.innerText = '';
+  }
+  if (currInput) currInput.value = '';
+  if (newInput) newInput.value = '';
+  if (confirmInput) confirmInput.value = '';
+
+  if (modal) {
+    modal.classList.add('active');
+    setTimeout(() => {
+      if (currInput) currInput.focus();
+    }, 100);
+  }
+};
+
+window.togglePasswordVisibility = function(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  input.type = input.type === 'password' ? 'text' : 'password';
+};
 
 /* ---------------- Theme Management ---------------- */
 function initTheme() {
@@ -100,23 +254,34 @@ function initData() {
     saveProfile();
   }
 
-  // Ensure each education item has the latest default images if missing
+  // Ensure each education item matches the new milestone sequence (ม.ต้น, ม.ปลาย, ปวส.)
   if (profileData && profileData.education) {
-    let needsUpdate = false;
-    profileData.education.forEach((item, i) => {
-      if (!item.image && DEFAULT_PROFILE.education[i]) {
-        item.image = DEFAULT_PROFILE.education[i].image;
-        item.caption = DEFAULT_PROFILE.education[i].caption;
-        item.id = DEFAULT_PROFILE.education[i].id;
-        needsUpdate = true;
-      }
-      if (!item.id && DEFAULT_PROFILE.education[i]) {
-        item.id = DEFAULT_PROFILE.education[i].id;
-        needsUpdate = true;
-      }
-    });
-    if (needsUpdate) {
+    const hasPrimary = profileData.education.some(e => e.id === 'edu-primary' || (e.title && e.title.includes('ประถม')));
+    const hasVocational = profileData.education.some(e => e.id === 'edu-vocational' || (e.title && e.title.includes('วิชาชีพชั้นสูง')));
+    const startsWithHigh = profileData.education.length > 0 && profileData.education[0].id === 'edu-high';
+
+    if (hasPrimary || !hasVocational || startsWithHigh) {
+      profileData.education = JSON.parse(JSON.stringify(DEFAULT_PROFILE.education));
       saveProfile();
+    } else {
+      let needsUpdate = false;
+      profileData.education.forEach((item, i) => {
+        const def = DEFAULT_PROFILE.education[i];
+        if (def) {
+          if (!item.logo || (item.logo && item.logo.includes('.jpg')) || (item.image && item.image.includes('.jpg'))) {
+            item.logo = def.logo;
+            item.image = def.image;
+            needsUpdate = true;
+          }
+          if (!item.id) {
+            item.id = def.id;
+            needsUpdate = true;
+          }
+        }
+      });
+      if (needsUpdate) {
+        saveProfile();
+      }
     }
   }
 }
@@ -124,6 +289,7 @@ function initData() {
 function saveProfile() {
   localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(profileData));
   renderProfileInfo();
+  broadcastRealtimeSync('PROFILE_UPDATED');
 }
 
 function saveWorksheets() {
@@ -132,6 +298,7 @@ function saveWorksheets() {
   if (filterCalendarInstance) {
     filterCalendarInstance.refresh();
   }
+  broadcastRealtimeSync('WORKSHEETS_UPDATED', { count: worksheets.length });
 }
 
 /* ---------------- Navigation / Routing ---------------- */
@@ -218,40 +385,74 @@ function updateStats() {
   }
 }
 
+let eduOrderMode = 'asc'; // 'asc': ม.ต้น -> ม.ปลาย -> ปวส. | 'desc': ปวส. -> ม.ปลาย -> ม.ต้น
+
+window.toggleEduOrder = function() {
+  eduOrderMode = eduOrderMode === 'asc' ? 'desc' : 'asc';
+  renderProfileInfo();
+  const label = eduOrderMode === 'asc' ? 'เริ่มจาก ม.ต้น ➔ ม.ปลาย ➔ ปวส.' : 'เรียงจาก ปวส. (ล่าสุด) ➔ ม.ปลาย ➔ ม.ต้น';
+  showToast(`เรียงประวัติการศึกษา: ${label}`);
+};
+
 function renderProfileInfo() {
   const profile = profileData || DEFAULT_PROFILE;
 
-  // Render timeline with school photos
+  // Update Brand Logo & Title in Navbar and Footer
+  const badge = profile.brandBadge || 'P';
+  const brandName = profile.brandTitle || 'ภควัต';
+  const brandSub = (profile.brandSubtitle !== undefined) ? profile.brandSubtitle : 'Portfolio';
+
+  const badgeEl = document.getElementById('site-brand-badge');
+  const textEl = document.getElementById('site-brand-text');
+  if (badgeEl) badgeEl.innerText = badge;
+  if (textEl) {
+    textEl.innerHTML = `${brandName} ${brandSub ? `<b>${brandSub}</b>` : ''}`;
+  }
+
+  const footerTitle = document.getElementById('footer-brand-title');
+  if (footerTitle) {
+    footerTitle.innerText = `${brandName} ${brandSub ? `(${brandSub})` : ''} Portfolio & Worksheets`;
+  }
+
+  // Update order toggle button text if present
+  const orderTextEl = document.getElementById('edu-order-text');
+  if (orderTextEl) {
+    orderTextEl.innerText = eduOrderMode === 'asc' ? 'เรียง: ม.ต้น ➔ ปวส.' : 'เรียง: ล่าสุด (ปวส.) ก่อน';
+  }
+
+  // Render timeline with school logos
   const timelineEl = document.getElementById('education-timeline');
   if (timelineEl && profile.education) {
-    timelineEl.innerHTML = profile.education.map((item, idx) => `
-      <div class="timeline-item" data-edu-id="${item.id || idx}">
-        <div class="timeline-dot"></div>
-        <div class="timeline-header-row">
-          <span class="timeline-date">${item.period}</span>
-          <button type="button" class="btn-edu-edit" onclick="openEditEducationModal('${item.id || idx}')" title="เปลี่ยนรูปหรือแก้ไขข้อมูลโรงเรียนนี้">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-            เปลี่ยนรูป / แก้ไข
-          </button>
-        </div>
-        <h4 class="timeline-title">${item.title}</h4>
-        <div class="timeline-sub">${item.sub}</div>
-        <p class="timeline-desc">${item.desc}</p>
+    let list = [...profile.education];
+    if (eduOrderMode === 'desc') {
+      list.reverse();
+    }
 
-        ${item.image ? `
-          <div class="school-photo-card" onclick="openEduLightbox('${item.id || idx}')" title="คลิกเพื่อดูภาพโรงเรียนขนาดใหญ่ (ความละเอียดสูง)">
-            <div class="school-photo-wrapper">
-              <img src="${item.image}" alt="${item.sub}" class="school-photo-img" loading="lazy" />
-              <div class="school-photo-overlay">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-                <span>คลิกดูภาพขนาดใหญ่</span>
+    timelineEl.innerHTML = list.map((item, idx) => {
+      const logoSrc = item.logo || item.image || 'assets/images/logo_school_high.svg';
+      const isCurrent = item.id === 'edu-vocational' || (item.title && item.title.includes('วิชาชีพชั้นสูง')) || (item.period && item.period.includes('ปัจจุบัน'));
+      return `
+        <div class="timeline-item" data-edu-id="${item.id || idx}">
+          <div class="timeline-dot ${isCurrent ? 'current' : ''}"></div>
+
+          <div class="timeline-edu-card">
+            <div class="school-logo-slot" onclick="openEduLightbox('${item.id || idx}')" title="คลิกเพื่อดูโลโก้โรงเรียนขนาดเต็ม">
+              <img src="${logoSrc}" alt="โลโก้ ${item.sub}" class="school-logo-img" loading="lazy" />
+              <div class="school-logo-hover">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
               </div>
             </div>
-            ${item.caption ? `<div class="school-photo-caption">🏫 ${item.caption}</div>` : ''}
+            <div class="timeline-edu-details">
+              <div class="timeline-title-row">
+                <h4 class="timeline-title">${item.title}</h4>
+              </div>
+              <div class="timeline-sub">${item.sub}</div>
+              <p class="timeline-desc">${item.desc}</p>
+            </div>
           </div>
-        ` : ''}
-      </div>
-    `).join('');
+        </div>
+      `;
+    }).join('');
   }
 
   // Render skills
@@ -276,7 +477,7 @@ function renderFeaturedWorks() {
   if (!featuredContainer) return;
 
   const featured = worksheets.slice(0, 3);
-  featuredContainer.innerHTML = featured.map(work => createWorkCardHTML(work)).join('');
+  featuredContainer.innerHTML = featured.map((work, idx) => createWorkCardHTML(work, idx)).join('');
 }
 
 let selectedFilterDate = null;
@@ -296,6 +497,7 @@ function getFilteredWorksheets() {
     const query = currentSearch.toLowerCase().trim();
     const matchesSearch = !query || 
       work.title.toLowerCase().includes(query) ||
+      (work.description && work.description.toLowerCase().includes(query)) ||
       (work.date && work.date.toLowerCase().includes(query)) ||
       (work.subject && work.subject.toLowerCase().includes(query));
 
@@ -347,7 +549,7 @@ function renderWorksheetsGrid() {
           <div class="empty-state-icon">📂</div>
           <h3>ไม่พบใบงานที่ตรงกับการค้นหา</h3>
           <p style="color: var(--text-muted); margin-top: 6px;">ลองค้นหาด้วยคำอื่น หรือกด "ทั้งหมด"</p>
-          <button type="button" class="btn btn-cyan" onclick="clearDateFilter()" style="margin-top: 14px; font-size: 0.88rem;">
+          <button type="button" class="btn btn-cyan" onclick="clearDateFilter();" style="margin-top: 14px; font-size: 0.88rem;">
             แสดงใบงานทั้งหมด
           </button>
         </div>
@@ -367,7 +569,7 @@ function createWorkCardHTML(work) {
       </div>
       <div class="work-body">
         <div class="work-date">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           ${work.date}
         </div>
         <h3 class="work-title" style="cursor: pointer;" onclick="openWorkDetail('${work.id}')">${work.title}</h3>
@@ -375,7 +577,7 @@ function createWorkCardHTML(work) {
         <div class="work-footer" style="margin-top: auto;">
           <button class="btn-card-action view" onclick="openWorkDetail('${work.id}')">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            ดูรูปใบงาน
+            ดูรายละเอียด
           </button>
           ${work.link ? `
             <a href="${formatUrl(work.link)}" target="_blank" rel="noopener noreferrer" class="btn-card-action download" title="เปิดลิงก์ใบงาน/เอกสาร" style="flex:0 0 auto; padding:8px 12px; text-decoration:none;">
@@ -383,14 +585,6 @@ function createWorkCardHTML(work) {
               ลิงก์
             </a>
           ` : ''}
-          <button class="btn-card-action edit" onclick="openEditModal('${work.id}')" title="แก้ไขชื่อ/รูป/ลิงก์ใบงาน">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-            แก้ไข
-          </button>
-          <button class="btn-card-action delete" onclick="deleteWorksheet('${work.id}')" title="ลบใบงานนี้">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-            ลบ
-          </button>
         </div>
       </div>
     </article>
@@ -630,11 +824,9 @@ window.clearDateFilter = function() {
   selectedFilterDate = null;
   selectedFilterMonth = null;
 
-  const btnAll = document.getElementById('btn-filter-all');
   const btnCal = document.getElementById('btn-calendar-filter');
   const calText = document.getElementById('cal-filter-btn-text');
 
-  if (btnAll) btnAll.classList.add('active');
   if (btnCal) {
     btnCal.classList.remove('active');
     btnCal.classList.remove('open');
@@ -769,7 +961,7 @@ function setupEventListeners() {
     });
   });
 
-  [detailModal, addModal, editModal, editEduModal].forEach(modal => {
+  [detailModal, addModal, editModal, editEduModal, adminLoginModal, changePinModal].forEach(modal => {
     if (modal) {
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
@@ -967,8 +1159,6 @@ function setupEventListeners() {
       const id = document.getElementById('edit-edu-id').value;
       const title = document.getElementById('edit-edu-title').value.trim();
       const school = document.getElementById('edit-edu-school').value.trim();
-      const period = document.getElementById('edit-edu-period').value.trim();
-      const caption = document.getElementById('edit-edu-caption').value.trim();
       const desc = document.getElementById('edit-edu-desc').value.trim();
 
       if (!profileData) profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
@@ -977,17 +1167,92 @@ function setupEventListeners() {
       if (item) {
         item.title = title;
         item.sub = school;
-        item.period = period;
-        item.caption = caption;
         item.desc = desc;
         if (currentEditEduImageBase64) {
+          item.logo = currentEditEduImageBase64;
           item.image = currentEditEduImageBase64;
         }
         currentEditEduImageBase64 = null;
         saveProfile();
         closeAllModals();
-        showToast(`บันทึกข้อมูลโรงเรียน "${school}" เรียบร้อยแล้ว 🏫`);
+        showToast(`บันทึกข้อมูลและโลโก้ "${school}" เรียบร้อยแล้ว 🏫`);
       }
+    });
+  }
+
+  // Admin Login Form Submit
+  const adminLoginForm = document.getElementById('admin-login-form');
+  if (adminLoginForm) {
+    adminLoginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const pinInput = document.getElementById('admin-pin-input');
+      const rememberCheckbox = document.getElementById('admin-remember-me');
+      const errorEl = document.getElementById('admin-login-error');
+      const entered = pinInput ? pinInput.value.trim() : '';
+
+      const validPin = localStorage.getItem(STORAGE_PIN_KEY) || DEFAULT_PIN;
+      if (entered === validPin) {
+        currentRole = 'admin';
+        if (rememberCheckbox && rememberCheckbox.checked) {
+          localStorage.setItem(STORAGE_ROLE_KEY, 'admin');
+        } else {
+          sessionStorage.setItem(STORAGE_ROLE_KEY, 'admin');
+        }
+        applyRole('admin');
+        closeAllModals();
+        showToast('เข้าสู่ระบบผู้ดูแล (Admin Mode) สำเร็จ! ปลดล็อกการแก้ไขแล้ว 👑');
+      } else {
+        if (errorEl) {
+          errorEl.innerText = '❌ รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง';
+          errorEl.style.display = 'block';
+        }
+        if (pinInput) {
+          pinInput.focus();
+          pinInput.select();
+        }
+      }
+    });
+  }
+
+  // Change Admin PIN Form Submit
+  const changePinForm = document.getElementById('change-pin-form');
+  if (changePinForm) {
+    changePinForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const currInput = document.getElementById('current-pin-input');
+      const newInput = document.getElementById('new-pin-input');
+      const confirmInput = document.getElementById('confirm-pin-input');
+      const errorEl = document.getElementById('change-pin-error');
+
+      const currentPin = localStorage.getItem(STORAGE_PIN_KEY) || DEFAULT_PIN;
+      if (currInput.value.trim() !== currentPin) {
+        if (errorEl) {
+          errorEl.innerText = '❌ รหัสผ่านปัจจุบันไม่ถูกต้อง';
+          errorEl.style.display = 'block';
+        }
+        return;
+      }
+
+      if (newInput.value.trim().length < 4) {
+        if (errorEl) {
+          errorEl.innerText = '❌ รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 4 ตัวอักษร';
+          errorEl.style.display = 'block';
+        }
+        return;
+      }
+
+      if (newInput.value.trim() !== confirmInput.value.trim()) {
+        if (errorEl) {
+          errorEl.innerText = '❌ ยืนยันรหัสผ่านใหม่ไม่ตรงกัน';
+          errorEl.style.display = 'block';
+        }
+        return;
+      }
+
+      const updatedPin = newInput.value.trim();
+      localStorage.setItem(STORAGE_PIN_KEY, updatedPin);
+      closeAllModals();
+      showToast('เปลี่ยนรหัสผ่าน Admin เรียบร้อยแล้ว! 🔑');
     });
   }
 
@@ -1045,6 +1310,73 @@ function setupEventListeners() {
       closeAllModals();
     }
   });
+
+  // Real-Time Synchronization Listeners
+  if (realtimeChannel) {
+    realtimeChannel.onmessage = (event) => {
+      if (event.data && (event.data.type === 'WORKSHEETS_UPDATED' || event.data.type === 'PROFILE_UPDATED' || event.data.type === 'SYNC_ALL')) {
+        reloadRealtimeData(event.data.type, true);
+      }
+    };
+  }
+
+  // Cross-Tab / Window LocalStorage sync fallback
+  window.addEventListener('storage', (e) => {
+    if (e.key === STORAGE_WORKS_KEY || e.key === STORAGE_PROFILE_KEY) {
+      reloadRealtimeData(e.key, true);
+    } else if (e.key === STORAGE_THEME_KEY && e.newValue) {
+      document.documentElement.setAttribute('data-theme', e.newValue);
+      updateThemeIcon(e.newValue);
+    }
+  });
+
+  // Sync on tab switch or focus
+  window.addEventListener('focus', () => {
+    reloadRealtimeData('focus', false);
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      reloadRealtimeData('visibility', false);
+    }
+  });
+}
+
+function reloadRealtimeData(actionType = 'update', notify = true) {
+  const storedWorks = localStorage.getItem(STORAGE_WORKS_KEY);
+  if (storedWorks) {
+    try {
+      worksheets = JSON.parse(storedWorks);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  const storedProfile = localStorage.getItem(STORAGE_PROFILE_KEY);
+  if (storedProfile) {
+    try {
+      profileData = JSON.parse(storedProfile);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  renderAll();
+  if (filterCalendarInstance) {
+    filterCalendarInstance.refresh();
+  }
+
+  // Add subtle flash animation to work cards
+  const cards = document.querySelectorAll('.work-card');
+  cards.forEach(c => {
+    c.classList.remove('realtime-synced-card');
+    void c.offsetWidth; // trigger reflow
+    c.classList.add('realtime-synced-card');
+  });
+
+  if (notify) {
+    showToast('✨ ข้อมูลใบงานและประวัติอัปเดตแบบเรียลไทม์แล้ว');
+  }
 }
 
 function closeAllModals() {
@@ -1052,6 +1384,8 @@ function closeAllModals() {
   if (addModal) addModal.classList.remove('active');
   if (editModal) editModal.classList.remove('active');
   if (editEduModal) editEduModal.classList.remove('active');
+  if (adminLoginModal) adminLoginModal.classList.remove('active');
+  if (changePinModal) changePinModal.classList.remove('active');
 }
 
 /* ---------------- Helper: Process & Keep High-Res Image File ---------------- */
@@ -1119,31 +1453,21 @@ window.openWorkDetail = function(id) {
     </div>
     
     <div style="margin-top: 1.25rem;">
-      <div style="font-size: 0.88rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <div style="font-size: 0.85rem; color: var(--text-dim); display: flex; align-items: center; gap: 5px; margin-bottom: 8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
         วันที่: ${work.date}
       </div>
-      <h2 style="font-size: 1.5rem; color: var(--text-main); font-weight: 700; line-height: 1.4;">${work.title}</h2>
-      
+
+      <h2 style="font-size: 1.45rem; color: var(--text-main); font-weight: 700; line-height: 1.4; margin-bottom: 0.75rem;">${work.title}</h2>
+
       ${work.link ? `
-        <div style="margin-top: 1.25rem;">
+        <div style="margin-top: 1rem;">
           <a href="${formatUrl(work.link)}" target="_blank" rel="noopener noreferrer" class="btn btn-cyan" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; font-size:0.95rem; text-decoration:none; border-radius:var(--radius-md);">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
             🔗 เปิดดูลิงก์ผลงาน / ไฟล์งาน
           </a>
         </div>
       ` : ''}
-    </div>
-
-    <div style="display:flex; gap:10px; margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border-subtle); flex-wrap:wrap;">
-      <button class="btn-card-action edit" style="padding:10px 16px; border-radius:var(--radius-sm);" onclick="closeAllModals(); openEditModal('${work.id}')">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-        แก้ไขชื่อและรูปใบงานนี้
-      </button>
-      <button class="btn-card-action delete" style="padding:10px 16px; border-radius:var(--radius-sm); flex:0 0 auto;" onclick="deleteWorksheet('${work.id}')">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-        ลบใบงานนี้
-      </button>
     </div>
   `;
 
@@ -1249,8 +1573,6 @@ window.openEditEducationModal = function(eduId) {
   const idInput = document.getElementById('edit-edu-id');
   const titleInput = document.getElementById('edit-edu-title');
   const schoolInput = document.getElementById('edit-edu-school');
-  const periodInput = document.getElementById('edit-edu-period');
-  const captionInput = document.getElementById('edit-edu-caption');
   const descInput = document.getElementById('edit-edu-desc');
   const fileInput = document.getElementById('edit-edu-image-file');
   const preview = document.getElementById('edit-edu-image-preview');
@@ -1260,13 +1582,12 @@ window.openEditEducationModal = function(eduId) {
   if (idInput) idInput.value = item.id || eduId;
   if (titleInput) titleInput.value = item.title || '';
   if (schoolInput) schoolInput.value = item.sub || '';
-  if (periodInput) periodInput.value = item.period || '';
-  if (captionInput) captionInput.value = item.caption || '';
   if (descInput) descInput.value = item.desc || '';
 
+  const currentLogo = item.logo || item.image;
   if (preview) {
-    if (item.image) {
-      preview.src = item.image;
+    if (currentLogo) {
+      preview.src = currentLogo;
       preview.classList.add('has-image');
       if (placeholder) placeholder.style.display = 'none';
     } else {
@@ -1285,8 +1606,9 @@ window.openEduLightbox = function(eduId) {
   const profile = profileData || DEFAULT_PROFILE;
   if (!profile || !profile.education) return;
   const item = profile.education.find(e => (e.id === eduId)) || profile.education[eduId];
-  if (item && item.image) {
-    window.openLightbox(item.image, `${item.sub} - ${item.title}`);
+  const logoSrc = item ? (item.logo || item.image) : null;
+  if (logoSrc) {
+    window.openLightbox(logoSrc, `ตราสัญลักษณ์ / โลโก้ - ${item.sub} (${item.title})`);
   }
 };
 

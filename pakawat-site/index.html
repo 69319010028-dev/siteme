@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="dark">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ภควัต (Pakawat) | พอร์ตโฟลิโอ & คลังเก็บใบงาน</title>
   <meta name="description" content="เว็บไซต์เก็บงาน แนะนำตนเอง ประวัติส่วนตัว และคลังสะสมผลงานใบงานของ ภควัต (Pakawat)">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
 </head>
+
 <body>
 
   <!-- Ambient Glow Background -->
@@ -23,33 +26,67 @@
     <header class="site-header">
       <div class="container nav-container">
         <a href="#home" class="brand-logo" id="brand-logo-link">
-          <div class="logo-badge">P</div>
-          <span>ภควัต <b>Portfolio</b></span>
+          <div class="logo-badge" id="site-brand-badge">P</div>
+          <span id="site-brand-text">ภควัต <b>Portfolio</b></span>
         </a>
 
         <!-- Navigation Links -->
         <nav class="nav-menu" id="nav-menu" aria-label="Main Navigation">
           <button class="nav-item active" data-target="home" id="nav-btn-home">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
             หน้าแรก & แนะนำตัวเอง
           </button>
           <button class="nav-item" data-target="profile" id="nav-btn-profile">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
             ประวัติส่วนตัว
           </button>
           <button class="nav-item" data-target="worksheets" id="nav-btn-worksheets">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
             คลังใบงาน & ผลงาน
           </button>
         </nav>
 
         <!-- Actions -->
         <div class="nav-actions">
+          <div class="realtime-live-badge" title="ระบบซิงค์ข้อมูลแบบเรียลไทม์อัตโนมัติ (Live Real-Time Sync)">
+            <span class="pulse-green-dot"></span>
+            <span>เรียลไทม์</span>
+          </div>
           <button class="theme-btn" id="theme-toggle-btn" title="สลับโหมดมืด/สว่าง" aria-label="Toggle Theme">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
           </button>
           <button class="mobile-toggle" id="mobile-menu-btn" title="เปิดเมนู" aria-label="Open Mobile Menu">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
           </button>
         </div>
       </div>
@@ -80,11 +117,19 @@
 
                 <div class="hero-btns">
                   <a href="#worksheets" class="btn btn-primary" id="hero-btn-worksheets">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
                     เข้าสู่คลังใบงาน
                   </a>
                   <a href="#profile" class="btn btn-secondary" id="hero-btn-profile">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
                     ดูประวัติส่วนตัว
                   </a>
                 </div>
@@ -110,7 +155,7 @@
                 <div class="avatar-wrapper">
                   <div class="avatar-halo"></div>
                   <img src="assets/images/avatar.jpg" alt="ภควัต (Pakawat) Avatar" class="avatar-img" />
-                  
+
                   <!-- Floating Info Badges -->
                   <div class="floating-badge badge-top">
                     <div class="badge-icon purple">💻</div>
@@ -136,7 +181,12 @@
           <div class="section-header">
             <div>
               <h2 class="section-title">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)"
+                  stroke-width="2">
+                  <polygon
+                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                  </polygon>
+                </svg>
                 สารบัญและโครงสร้างเว็บไซต์
               </h2>
               <p class="section-subtitle">เข้าถึงข้อมูลและผลงานต่าง ๆ ได้สะดวกรวดเร็ว</p>
@@ -146,7 +196,10 @@
           <div class="cards-grid-3">
             <div class="feature-box">
               <div class="feature-icon-wrapper">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
               </div>
               <h3>1. แนะนำตนเอง</h3>
               <p>ทำความรู้จักกับตัวตน ความสนใจ และภาพรวมของคลังสะสมผลงานในการศึกษา</p>
@@ -157,7 +210,10 @@
 
             <div class="feature-box">
               <div class="feature-icon-wrapper" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
               </div>
               <h3>2. ประวัติส่วนตัว</h3>
               <p>ประวัติการศึกษา ความสามารถ ทักษะทางคอมพิวเตอร์ และช่องทางติดต่อสื่อสาร</p>
@@ -167,8 +223,13 @@
             </div>
 
             <div class="feature-box">
-              <div class="feature-icon-wrapper" style="background: rgba(236, 72, 153, 0.15); color: var(--accent-pink);">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              <div class="feature-icon-wrapper"
+                style="background: rgba(236, 72, 153, 0.15); color: var(--accent-pink);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="3" y1="9" x2="21" y2="9"></line>
+                  <line x1="9" y1="21" x2="9" y2="9"></line>
+                </svg>
               </div>
               <h3>3. หน้าใบงานและผลงาน</h3>
               <p>คลังรวบรวมใบงาน รายละเอียดคะแนน คำแนะนำอาจารย์ พร้อมฟังก์ชันค้นหาและเพิ่มใบงานใหม่</p>
@@ -182,7 +243,10 @@
           <div class="section-header" style="margin-top: 1.5rem;">
             <div>
               <h2 class="section-title">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)"
+                  stroke-width="2">
+                  <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path>
+                </svg>
                 ใบงานเด่นล่าสุด
               </h2>
               <p class="section-subtitle">ตัวอย่างใบงานที่ได้รับผลการประเมินยอดเยี่ยม</p>
@@ -199,7 +263,7 @@
         <!-- ================= VIEW 2: PROFILE (ประวัติส่วนตัว) ================= -->
         <section class="page-view" id="view-profile">
           <div class="profile-layout">
-            
+
             <!-- Left Sidebar -->
             <aside class="profile-sidebar">
               <!-- Profile Bio Card -->
@@ -207,9 +271,9 @@
                 <div class="profile-avatar-wrapper">
                   <img src="assets/images/avatar.jpg" alt="ภควัต" class="profile-avatar" />
                 </div>
-                <h2>ภควัต (Pakawat)</h2>
-                <div class="role">Student & Web Creator</div>
-                
+                <h2>ภควัต ศรีรัตน์</h2>
+                <div class="role">Student</div>
+
                 <p class="bio-quote">
                   "การเรียนรู้ไม่มีที่สิ้นสุด พัฒนาตนเองผ่านทุกใบงานและลงมือทำอย่างจริงจัง"
                 </p>
@@ -218,27 +282,27 @@
                   <div class="meta-item">
                     <div class="meta-icon">👤</div>
                     <span class="label">ชื่อ-สกุล:</span>
-                    <span class="value">นายภควัต สกุลวัฒนา</span>
+                    <span class="value">นายภควัต ศรีรัตน์</span>
                   </div>
                   <div class="meta-item">
                     <div class="meta-icon">🏷️</div>
                     <span class="label">ชื่อเล่น:</span>
-                    <span class="value">วัฒน์</span>
+                    <span class="value">ซัง</span>
                   </div>
                   <div class="meta-item">
                     <div class="meta-icon">🏫</div>
                     <span class="label">สถานศึกษา:</span>
-                    <span class="value">โรงเรียนมัธยมวิทยาคม</span>
+                    <span class="value">วิทยาลัยเทคนิคนครศรีธรรมราช</span>
                   </div>
                   <div class="meta-item">
                     <div class="meta-icon">🎓</div>
                     <span class="label">ระดับชั้น:</span>
-                    <span class="value">มัธยมศึกษาตอนปลาย</span>
+                    <span class="value">ประกาศนียบัตรวิชาชีพชั้นสูง</span>
                   </div>
                   <div class="meta-item">
                     <div class="meta-icon">📍</div>
                     <span class="label">ที่อยู่:</span>
-                    <span class="value">กรุงเทพมหานคร</span>
+                    <span class="value">นครศรีธรรมราช</span>
                   </div>
                 </div>
               </div>
@@ -247,17 +311,28 @@
               <div class="contact-quick-card">
                 <h4>ช่องทางติดต่อ</h4>
                 <div class="social-links">
-                  <button class="social-btn" onclick="copyContact('pakawat.student@example.com', 'อีเมล')">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                    pakawat.student@example.com
+                  <button class="social-btn" onclick="copyContact('69319010028@tnk.ac.th', 'อีเมล')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                      <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    69319010028@tnk.ac.th
                   </button>
-                  <button class="social-btn" onclick="copyContact('089-123-4567', 'เบอร์โทรศัพท์')">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                    089-123-4567 (คลิกเพื่อคัดลอก)
+                  <button class="social-btn" onclick="copyContact('099-436-2677', 'เบอร์โทรศัพท์')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path
+                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                      </path>
+                    </svg>
+                    099-436-2677 (คลิกเพื่อคัดลอก)
                   </button>
-                  <button class="social-btn" onclick="copyContact('https://github.com', 'GitHub')">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-                    GitHub: github.com/pakawat
+                  <button class="social-btn" onclick="copyContact('https://github.com/69319010028-dev', 'GitHub')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path
+                        d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                      </path>
+                    </svg>
+                    https://github.com/69319010028-dev
                   </button>
                 </div>
               </div>
@@ -265,14 +340,30 @@
 
             <!-- Right Main Profile -->
             <div class="profile-main">
-              
+
               <!-- Education Timeline Panel -->
               <div class="content-panel">
-                <div class="panel-header">
-                  <div class="panel-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+                <div class="panel-header" style="justify-content: space-between; align-items: center;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="panel-icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                      </svg>
+                    </div>
+                    <h3 class="panel-title">ประวัติการศึกษา (Education Background)</h3>
                   </div>
-                  <h3 class="panel-title">ประวัติการศึกษา (Education Background)</h3>
+                  <button type="button" class="btn-edu-order-toggle" id="btn-toggle-edu-order"
+                    onclick="toggleEduOrder()" title="คลิกเพื่อสลับการเรียงลำดับเวลา (เก่าไปใหม่ / ใหม่ไปเก่า)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="m3 16 4 4 4-4"></path>
+                      <path d="M7 20V4"></path>
+                      <path d="m21 8-4-4-4 4"></path>
+                      <path d="M17 4v16"></path>
+                    </svg>
+                    <span id="edu-order-text">เรียง: ม.ต้น ➔ ปวส.</span>
+                  </button>
                 </div>
 
                 <div class="timeline" id="education-timeline">
@@ -284,7 +375,9 @@
               <div class="content-panel">
                 <div class="panel-header">
                   <div class="panel-icon" style="background: rgba(139, 92, 246, 0.15); color: var(--accent-purple);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
                   </div>
                   <h3 class="panel-title">ทักษะและความสามารถ (Skills & Competencies)</h3>
                 </div>
@@ -294,7 +387,8 @@
                 </div>
 
                 <div style="margin-top: 1.5rem;">
-                  <strong style="font-size: 0.95rem; display: block; margin-bottom: 0.5rem;">ความสนใจพิเศษและโปรแกรมที่ใช้งาน:</strong>
+                  <strong
+                    style="font-size: 0.95rem; display: block; margin-bottom: 0.5rem;">ความสนใจพิเศษและโปรแกรมที่ใช้งาน:</strong>
                   <div class="tags-cloud">
                     <span class="tag-badge">Visual Studio Code</span>
                     <span class="tag-badge">Figma UI/UX</span>
@@ -312,13 +406,18 @@
               <div class="content-panel">
                 <div class="panel-header">
                   <div class="panel-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="m9 12 2 2 4-4"></path>
+                    </svg>
                   </div>
                   <h3 class="panel-title">เป้าหมายและแรงบันดาลใจในการศึกษา</h3>
                 </div>
                 <p style="color: var(--text-muted); line-height: 1.8;">
-                  มีความมุ่งมั่นที่จะเข้าศึกษาต่อในระดับอุดมศึกษา ในสาขาวิทยาการคอมพิวเตอร์ หรือวิศวกรรมคอมพิวเตอร์/ซอฟต์แวร์
-                  เพื่อนำความรู้และทักษะด้านเทคโนโลยีมาต่อยอด สร้างสรรค์นวัตกรรมดิจิทัลที่มีประโยชน์ต่อสังคมและประเทศชาติต่อไปในอนาคต
+                  มีความมุ่งมั่นที่จะเข้าศึกษาต่อในระดับอุดมศึกษา ในสาขาวิทยาการคอมพิวเตอร์
+                  หรือวิศวกรรมคอมพิวเตอร์/ซอฟต์แวร์
+                  เพื่อนำความรู้และทักษะด้านเทคโนโลยีมาต่อยอด
+                  สร้างสรรค์นวัตกรรมดิจิทัลที่มีประโยชน์ต่อสังคมและประเทศชาติต่อไปในอนาคต
                 </p>
               </div>
 
@@ -330,27 +429,32 @@
 
         <!-- ================= VIEW 3: WORKSHEETS (หน้าใบงาน & ผลงาน) ================= -->
         <section class="page-view" id="view-worksheets">
-          
+
           <div class="section-header">
             <div>
               <h2 class="section-title">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)"
+                  stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
                 คลังใบงานและผลงานสะสม
               </h2>
-              <p class="section-subtitle">ค้นหา ตรวจสอบผลคะแนน และบันทึกใบงานใหม่ได้ในที่เดียว</p>
+              <p class="section-subtitle">ค้นหา ตรวจสอบผลงาน และดูใบงานทั้งหมดในที่เดียว</p>
             </div>
-            
-            <button class="btn btn-cyan" id="btn-open-add-modal">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              เพิ่มใบงานใหม่
-            </button>
           </div>
 
           <!-- Controls Bar: Search & Filter Tabs -->
           <div class="worksheet-controls">
             <div class="controls-top">
               <div class="search-box">
-                <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
                 <input type="text" id="search-worksheet" placeholder="ค้นหาตามชื่อใบงาน..." />
               </div>
 
@@ -359,25 +463,37 @@
 
                 <!-- Calendar Date Filter Trigger & Popover Dropdown -->
                 <div class="cal-filter-container" id="cal-filter-container">
-                  <button type="button" class="filter-btn cal-filter-trigger" id="btn-calendar-filter" title="เลือกดูใบงานตามวันที่หรือปฏิทิน">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <button type="button" class="filter-btn cal-filter-trigger" id="btn-calendar-filter"
+                    title="เลือกดูใบงานตามวันที่หรือปฏิทิน">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
                       <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                       <line x1="16" y1="2" x2="16" y2="6"></line>
                       <line x1="8" y1="2" x2="8" y2="6"></line>
                       <line x1="3" y1="10" x2="21" y2="10"></line>
                     </svg>
                     <span id="cal-filter-btn-text">เลือกดูตามวันที่ (ปฏิทิน)</span>
-                    <svg class="cal-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <svg class="cal-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
                   </button>
 
                   <!-- Popover Dropdown matching Picture 2 -->
                   <div class="cal-dropdown-popover" id="filter-calendar-popover">
                     <div class="cal-popover-header">
                       <div class="cal-popover-title">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)"
+                          stroke-width="2">
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                          <line x1="16" y1="2" x2="16" y2="6"></line>
+                          <line x1="8" y1="2" x2="8" y2="6"></line>
+                          <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
                         <span>เลือกวันที่เพื่อค้นหาใบงาน</span>
                       </div>
-                      <button type="button" class="cal-popover-close" id="btn-close-cal-popover" title="ปิดหน้าต่างปฏิทิน">&times;</button>
+                      <button type="button" class="cal-popover-close" id="btn-close-cal-popover"
+                        title="ปิดหน้าต่างปฏิทิน">&times;</button>
                     </div>
 
                     <!-- Embedded Interactive Calendar (Picture 2 style) -->
@@ -389,10 +505,12 @@
                         <span class="has-work-dot-sample"></span> จุดสีฟ้า = วันที่มีใบงาน
                       </div>
                       <div class="cal-footer-actions">
-                        <button type="button" class="cal-action-btn" id="btn-filter-this-month" title="แสดงใบงานทั้งหมดในเดือนที่กำลังดู">
+                        <button type="button" class="cal-action-btn" id="btn-filter-this-month"
+                          title="แสดงใบงานทั้งหมดในเดือนที่กำลังดู">
                           ดูทั้งเดือนนี้
                         </button>
-                        <button type="button" class="cal-action-btn clear" id="btn-filter-clear" title="ล้างการเลือกวันที่และแสดงทั้งหมด">
+                        <button type="button" class="cal-action-btn clear" id="btn-filter-clear"
+                          title="ล้างการเลือกวันที่และแสดงทั้งหมด">
                           ล้างตัวกรอง
                         </button>
                       </div>
@@ -406,9 +524,6 @@
           <!-- Counter bar -->
           <div class="works-stats-bar">
             <span>แสดงผล: <b id="works-found-count" style="color:var(--text-main);">0 รายการ</b></span>
-            <button onclick="resetSampleData()" style="background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:0.8rem; text-decoration:underline;">
-              รีเซ็ตข้อมูลตัวอย่าง
-            </button>
           </div>
 
           <!-- Works Cards Grid -->
@@ -425,7 +540,7 @@
     <footer class="site-footer">
       <div class="container footer-content">
         <div>
-          <strong>ภควัต (Pakawat) Portfolio & Worksheets</strong>
+          <strong id="footer-brand-title">ภควัต Portfolio & Worksheets</strong>
           <div style="font-size: 0.8rem; margin-top: 4px; color: var(--text-dim);">
             สงวนลิขสิทธิ์ &copy; 2025. จัดทำขึ้นเพื่อการศึกษาและการสะสมผลงานส่วนบุคคล
           </div>
@@ -456,196 +571,53 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: ADD NEW WORKSHEET ================= -->
-  <div class="modal-backdrop" id="add-worksheet-modal" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h3>เพิ่มใบงานใหม่ในระบบ</h3>
-        <button class="modal-close" aria-label="Close modal">&times;</button>
-      </div>
-      <form id="add-worksheet-form">
-        <div class="modal-body">
-          <div class="form-group">
-            <label class="form-label" for="add-title">ชื่อใบงาน / หัวข้องาน *</label>
-            <input type="text" id="add-title" class="form-input" placeholder="เช่น ใบงานที่ 6: การเขียนโปรแกรมเบื้องต้น" required autofocus />
-          </div>
 
-          <div class="form-group">
-            <label class="form-label">เลือกวันที่ของใบงาน / วันที่ส่ง *</label>
-            <div class="inline-calendar" id="add-calendar-picker"></div>
-            <input type="hidden" id="add-date" required />
-            <div class="selected-date-display">
-              <span>📅 วันที่เลือก:</span> <strong id="add-date-label">-</strong>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">แนบรูปใบงาน (สามารถถ่ายรูปหรือเลือกไฟล์จากเครื่องได้)</label>
-            <div class="image-upload-zone" id="add-image-dropzone">
-              <input type="file" id="add-image-file" accept="image/*" />
-              <div class="upload-placeholder" id="add-upload-placeholder">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                <span>คลิกหรือลากไฟล์รูปภาพมาวางที่นี่</span>
-                <small style="color: var(--text-dim); font-size: 0.8rem;">รองรับไฟล์รูปภาพ JPG, PNG, WebP</small>
-              </div>
-              <img id="add-image-preview" class="upload-preview" alt="ตัวอย่างรูปใบงาน" />
-            </div>
-            <button type="button" id="btn-remove-add-image" class="btn-remove-preview" style="display: none;">ยกเลิกรูปนี้</button>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="add-link">แนบลิงก์ผลงาน / ไฟล์งาน (เช่น Google Drive, Canva, GitHub, ลิงก์เว็บ)</label>
-            <input type="text" id="add-link" class="form-input" placeholder="วางลิงก์ที่นี่ เช่น https://drive.google.com/..." />
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-modal-cancel">ยกเลิก</button>
-          <button type="submit" class="btn btn-cyan">บันทึกใบงาน</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ================= MODAL: EDIT WORKSHEET ================= -->
-  <div class="modal-backdrop" id="edit-worksheet-modal" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h3>แก้ไขชื่อ วันที่ รูป และลิงก์ใบงาน</h3>
-        <button class="modal-close" aria-label="Close modal">&times;</button>
-      </div>
-      <form id="edit-worksheet-form">
-        <input type="hidden" id="edit-work-id" />
-        <div class="modal-body">
-          <div class="form-group">
-            <label class="form-label" for="edit-title">ชื่อใบงาน / หัวข้องาน *</label>
-            <input type="text" id="edit-title" class="form-input" placeholder="กรอกชื่อใบงาน..." required autofocus />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">เลือกวันที่ของใบงาน / วันที่ส่ง *</label>
-            <div class="inline-calendar" id="edit-calendar-picker"></div>
-            <input type="hidden" id="edit-date" required />
-            <div class="selected-date-display">
-              <span>📅 วันที่เลือก:</span> <strong id="edit-date-label">-</strong>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">เปลี่ยนรูปใบงาน (ถ้าต้องการเปลี่ยน)</label>
-            <div class="image-upload-zone" id="edit-image-dropzone">
-              <input type="file" id="edit-image-file" accept="image/*" />
-              <div class="upload-placeholder" id="edit-upload-placeholder" style="display: none;">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                <span>คลิกเพื่อเปลี่ยนรูปภาพใบงาน</span>
-              </div>
-              <img id="edit-image-preview" class="upload-preview has-image" alt="ตัวอย่างรูปใบงานเดิม" />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="edit-link">แก้ไขลิงก์ผลงาน / ไฟล์งาน</label>
-            <input type="text" id="edit-link" class="form-input" placeholder="วางลิงก์ที่นี่ เช่น https://drive.google.com/..." />
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-modal-cancel">ยกเลิก</button>
-          <button type="submit" class="btn btn-cyan">บันทึกการแก้ไข</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ================= MODAL: EDIT EDUCATION / SCHOOL PHOTO ================= -->
-  <div class="modal-backdrop" id="edit-education-modal" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h3>แก้ไขข้อมูล & ใส่รูปภาพโรงเรียน</h3>
-        <button class="modal-close" aria-label="Close modal">&times;</button>
-      </div>
-      <form id="edit-education-form">
-        <input type="hidden" id="edit-edu-id" />
-        <div class="modal-body">
-          <div class="form-group">
-            <label class="form-label" for="edit-edu-title">ระดับการศึกษา *</label>
-            <input type="text" id="edit-edu-title" class="form-input" required />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="edit-edu-school">ชื่อโรงเรียน / สถาบัน *</label>
-            <input type="text" id="edit-edu-school" class="form-input" required />
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="edit-edu-period">ปีการศึกษา / ช่วงเวลา *</label>
-              <input type="text" id="edit-edu-period" class="form-input" placeholder="เช่น 2565 - ปัจจุบัน" required />
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="edit-edu-caption">คำบรรยายรูปภาพ</label>
-              <input type="text" id="edit-edu-caption" class="form-input" placeholder="เช่น บรรยากาศอาคารเรียน" />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="edit-edu-desc">รายละเอียด / แผนการเรียน / ผลงาน</label>
-            <textarea id="edit-edu-desc" class="form-textarea" rows="2"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">รูปภาพโรงเรียน (สามารถถ่ายรูปหรือเลือกไฟล์ภาพจากเครื่องได้)</label>
-            <div class="image-upload-zone" id="edit-edu-image-dropzone">
-              <input type="file" id="edit-edu-image-file" accept="image/*" />
-              <div class="upload-placeholder" id="edit-edu-upload-placeholder" style="display: none;">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                <span>คลิกเพื่อเปลี่ยนรูปภาพโรงเรียน</span>
-              </div>
-              <img id="edit-edu-image-preview" class="upload-preview has-image" alt="ตัวอย่างรูปโรงเรียน" />
-            </div>
-            <small style="color: var(--text-dim); font-size: 0.8rem; display: block; margin-top: 6px;">รองรับไฟล์ภาพ JPG, PNG, WebP (เก็บความละเอียดเต็ม)</small>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-modal-cancel">ยกเลิก</button>
-          <button type="submit" class="btn btn-cyan">บันทึกข้อมูลโรงเรียน</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <!-- ================= LIGHTBOX: FULLSCREEN IMAGE VIEWER ================= -->
-  <div class="lightbox-backdrop" id="image-lightbox-modal" aria-hidden="true">
-    <div class="lightbox-toolbar">
-      <span class="lightbox-title" id="lightbox-image-title">รูปภาพใบงาน</span>
-      <div class="lightbox-actions">
-        <button class="lightbox-btn" id="btn-zoom-in" title="ซูมขยาย (+)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-          ขยาย
-        </button>
-        <button class="lightbox-btn" id="btn-zoom-out" title="ซูมย่อ (-)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-          ย่อ
-        </button>
-        <button class="lightbox-btn" id="btn-zoom-reset" title="ขนาดปกติ 100%">100%</button>
-        <button class="lightbox-btn" id="btn-open-newtab" title="เปิดรูปต้นฉบับในแท็บใหม่">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-          เปิดแท็บใหม่
-        </button>
-        <button class="lightbox-btn close" id="btn-close-lightbox" title="ปิดหน้าต่าง">&times;</button>
+    <div class="lightbox-backdrop" id="image-lightbox-modal" aria-hidden="true">
+      <div class="lightbox-toolbar">
+        <span class="lightbox-title" id="lightbox-image-title">รูปภาพใบงาน</span>
+        <div class="lightbox-actions">
+          <button class="lightbox-btn" id="btn-zoom-in" title="ซูมขยาย (+)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              <line x1="11" y1="8" x2="11" y2="14"></line>
+              <line x1="8" y1="11" x2="14" y2="11"></line>
+            </svg>
+            ขยาย
+          </button>
+          <button class="lightbox-btn" id="btn-zoom-out" title="ซูมย่อ (-)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              <line x1="8" y1="11" x2="14" y2="11"></line>
+            </svg>
+            ย่อ
+          </button>
+          <button class="lightbox-btn" id="btn-zoom-reset" title="ขนาดปกติ 100%">100%</button>
+          <button class="lightbox-btn" id="btn-open-newtab" title="เปิดรูปต้นฉบับในแท็บใหม่">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            เปิดแท็บใหม่
+          </button>
+          <button class="lightbox-btn close" id="btn-close-lightbox" title="ปิดหน้าต่าง">&times;</button>
+        </div>
+      </div>
+      <div class="lightbox-content" id="lightbox-container">
+        <img id="lightbox-img" src="" alt="ภาพใบงานขนาดเต็ม" />
       </div>
     </div>
-    <div class="lightbox-content" id="lightbox-container">
-      <img id="lightbox-img" src="" alt="ภาพใบงานขนาดเต็ม" />
-    </div>
-  </div>
 
-  <!-- Toast Notification Container -->
-  <div class="toast-container" id="toast-container"></div>
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
 
-  <!-- Scripts -->
-  <script src="js/data.js"></script>
-  <script src="js/app.js"></script>
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
 </body>
+
 </html>
