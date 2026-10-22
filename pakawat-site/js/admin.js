@@ -209,6 +209,7 @@ function saveProfile() {
   localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(profileData));
   renderAdminEducation();
   renderAdminBrand();
+  renderAdminHero();
   broadcastRealtimeSync('PROFILE_UPDATED');
 }
 
@@ -217,17 +218,21 @@ window.switchAdminTab = function (tabName) {
   const tabWorks = document.getElementById('admin-tab-works');
   const tabEdu = document.getElementById('admin-tab-edu');
   const tabBrand = document.getElementById('admin-tab-brand');
+  const tabHero = document.getElementById('admin-tab-hero');
   const btnWorks = document.getElementById('tab-btn-works');
   const btnEdu = document.getElementById('tab-btn-edu');
   const btnBrand = document.getElementById('tab-btn-brand');
+  const btnHero = document.getElementById('tab-btn-hero');
 
   if (tabWorks) tabWorks.style.display = (tabName === 'works') ? 'block' : 'none';
   if (tabEdu) tabEdu.style.display = (tabName === 'edu') ? 'block' : 'none';
   if (tabBrand) tabBrand.style.display = (tabName === 'brand') ? 'block' : 'none';
+  if (tabHero) tabHero.style.display = (tabName === 'hero') ? 'block' : 'none';
 
   if (btnWorks) btnWorks.classList.toggle('active', tabName === 'works');
   if (btnEdu) btnEdu.classList.toggle('active', tabName === 'edu');
   if (btnBrand) btnBrand.classList.toggle('active', tabName === 'brand');
+  if (btnHero) btnHero.classList.toggle('active', tabName === 'hero');
 };
 
 /* ---------------- Render Admin Content ---------------- */
@@ -241,21 +246,46 @@ function renderAdminAll() {
   renderAdminWorksheets();
   renderAdminEducation();
   renderAdminBrand();
+  renderAdminHero();
 }
+
+let currentBrandLogoBase64 = null;
 
 function renderAdminBrand() {
   const profile = profileData || DEFAULT_PROFILE;
   const badge = (profile && profile.brandBadge) || 'P';
+  const logoImg = (profile && profile.brandLogoImage) || '';
   const name = (profile && profile.brandTitle) || 'ภควัต';
   const sub = (profile && profile.brandSubtitle !== undefined) ? profile.brandSubtitle : 'Portfolio';
+
+  currentBrandLogoBase64 = logoImg;
 
   const badgeInput = document.getElementById('input-brand-badge');
   const nameInput = document.getElementById('input-brand-name');
   const subInput = document.getElementById('input-brand-subtitle');
+  const previewImg = document.getElementById('brand-logo-preview-img');
+  const placeholder = document.getElementById('brand-logo-placeholder');
+  const clearBtn = document.getElementById('btn-clear-logo-img');
 
   if (badgeInput && document.activeElement !== badgeInput) badgeInput.value = badge;
   if (nameInput && document.activeElement !== nameInput) nameInput.value = name;
   if (subInput && document.activeElement !== subInput) subInput.value = sub;
+
+  if (logoImg) {
+    if (previewImg) {
+      previewImg.src = logoImg;
+      previewImg.classList.add('has-image');
+    }
+    if (placeholder) placeholder.style.display = 'none';
+    if (clearBtn) clearBtn.style.display = 'inline-block';
+  } else {
+    if (previewImg) {
+      previewImg.src = '';
+      previewImg.classList.remove('has-image');
+    }
+    if (placeholder) placeholder.style.display = 'flex';
+    if (clearBtn) clearBtn.style.display = 'none';
+  }
 
   updateBrandPreview();
 
@@ -264,6 +294,47 @@ function renderAdminBrand() {
     headerName.innerText = name;
   }
 }
+
+window.handleBrandLogoUpload = function (fileInput) {
+  const file = fileInput.files && fileInput.files[0];
+  if (!file) return;
+
+  processImageFile(file, (dataUrl) => {
+    currentBrandLogoBase64 = dataUrl;
+    const previewImg = document.getElementById('brand-logo-preview-img');
+    const placeholder = document.getElementById('brand-logo-placeholder');
+    const clearBtn = document.getElementById('btn-clear-logo-img');
+
+    if (previewImg) {
+      previewImg.src = dataUrl;
+      previewImg.classList.add('has-image');
+    }
+    if (placeholder) placeholder.style.display = 'none';
+    if (clearBtn) clearBtn.style.display = 'inline-block';
+
+    updateBrandPreview();
+    showToast('โหลดรูปภาพโลโก้เข้าพรีวิวแล้ว (อย่าลืมกดบันทึก)');
+  });
+};
+
+window.clearLogoImage = function () {
+  currentBrandLogoBase64 = '';
+  const fileInput = document.getElementById('brand-logo-file');
+  const previewImg = document.getElementById('brand-logo-preview-img');
+  const placeholder = document.getElementById('brand-logo-placeholder');
+  const clearBtn = document.getElementById('btn-clear-logo-img');
+
+  if (fileInput) fileInput.value = '';
+  if (previewImg) {
+    previewImg.src = '';
+    previewImg.classList.remove('has-image');
+  }
+  if (placeholder) placeholder.style.display = 'flex';
+  if (clearBtn) clearBtn.style.display = 'none';
+
+  updateBrandPreview();
+  showToast('ลบรูปภาพโลโก้แล้ว (สลับมาใช้ตัวอักษรย่อ)');
+};
 
 window.updateBrandPreview = function () {
   const badgeInput = document.getElementById('input-brand-badge');
@@ -277,7 +348,18 @@ window.updateBrandPreview = function () {
   const previewBadge = document.getElementById('preview-brand-badge');
   const previewText = document.getElementById('preview-brand-text');
 
-  if (previewBadge) previewBadge.innerText = badge;
+  if (previewBadge) {
+    if (currentBrandLogoBase64) {
+      previewBadge.innerHTML = `<img src="${currentBrandLogoBase64}" alt="Logo" class="logo-badge-img" style="width:100%; height:100%; object-fit:cover; display:block;" />`;
+      previewBadge.style.background = 'transparent';
+      previewBadge.style.padding = '0';
+    } else {
+      previewBadge.innerText = badge;
+      previewBadge.style.background = 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))';
+      previewBadge.style.padding = '';
+    }
+  }
+
   if (previewText) {
     previewText.innerHTML = `${name} ${sub ? `<b style="color:var(--accent-cyan);">${sub}</b>` : ''}`;
   }
@@ -292,22 +374,261 @@ window.handleBrandSave = function (e) {
   if (!profileData) profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
 
   profileData.brandBadge = badgeInput ? badgeInput.value.trim() || 'P' : 'P';
+  profileData.brandLogoImage = (currentBrandLogoBase64 !== null) ? currentBrandLogoBase64 : (profileData.brandLogoImage || '');
   profileData.brandTitle = nameInput ? nameInput.value.trim() || 'ภควัต' : 'ภควัต';
   profileData.brandSubtitle = subInput ? subInput.value.trim() : '';
 
   saveProfile();
-  showToast(`บันทึกโลโก้ "${profileData.brandBadge}" และชื่อ "${profileData.brandTitle}" สำเร็จเรียบร้อย! ✨`);
+  showToast(`บันทึกโลโก้และชื่อ "${profileData.brandTitle}" สำเร็จเรียบร้อย! ✨`);
 };
 
 window.resetBrandDefaults = function () {
   if (confirm('ต้องการรีเซ็ตชื่อและโลโก้เว็บไซต์กลับเป็นค่าเริ่มต้นหรือไม่?')) {
     if (!profileData) profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
+    currentBrandLogoBase64 = '';
     profileData.brandBadge = 'P';
+    profileData.brandLogoImage = '';
     profileData.brandTitle = 'ภควัต';
     profileData.brandSubtitle = 'Portfolio';
+
+    const fileInput = document.getElementById('brand-logo-file');
+    if (fileInput) fileInput.value = '';
+
     saveProfile();
     renderAdminBrand();
     showToast('รีเซ็ตชื่อและโลโก้เว็บไซต์กลับเป็นค่าเริ่มต้นแล้ว');
+  }
+};
+
+/* ---------------- Hero Banner & Avatar Management ---------------- */
+let currentHeroAvatarBase64 = null;
+
+function renderAdminHero() {
+  const profile = profileData || DEFAULT_PROFILE;
+  const def = DEFAULT_PROFILE;
+
+  const tag = (profile && profile.heroTag) || def.heroTag || 'คลังเก็บผลงานและใบงานออนไลน์';
+  const greeting = (profile && profile.heroGreeting) || def.heroGreeting || 'สวัสดีครับ, ผม';
+  const name = (profile && profile.heroName) || (profile && profile.brandTitle) || def.heroName || 'ภควัต';
+  const sub = (profile && profile.heroSubtitle) || def.heroSubtitle || 'ยินดีต้อนรับสู่พื้นที่รวมงาน';
+  const desc = (profile && profile.heroDesc) || def.heroDesc || '';
+  const avatar = (profile && profile.avatarImage) || '';
+  const majorIcon = (profile && profile.heroMajorIcon) || def.heroMajorIcon || '💻';
+  const majorLabel = (profile && profile.heroMajorLabel) || def.heroMajorLabel || 'สาขาการเรียน';
+  const majorVal = (profile && profile.heroMajorVal) || def.heroMajorVal || 'วิทย์-คณิต-คอมฯ';
+  const gpa = (profile && (profile.heroGpa || profile.gpa)) || def.heroGpa || '3.85';
+  const gpaLabel = (profile && profile.heroGpaLabel) || def.heroGpaLabel || 'เกรดเฉลี่ยสะสม (GPA)';
+  const commit = (profile && profile.heroCommitment) || def.heroCommitment || '100%';
+  const commitLabel = (profile && profile.heroCommitmentLabel) || def.heroCommitmentLabel || 'ความตั้งใจและส่งตรงเวลา';
+
+  currentHeroAvatarBase64 = avatar;
+
+  const tagInput = document.getElementById('input-hero-tag');
+  const greetingInput = document.getElementById('input-hero-greeting');
+  const nameInput = document.getElementById('input-hero-name');
+  const subInput = document.getElementById('input-hero-sub');
+  const descInput = document.getElementById('input-hero-desc');
+  const majorIconInput = document.getElementById('input-hero-major-icon');
+  const majorLabelInput = document.getElementById('input-hero-major-label');
+  const majorValInput = document.getElementById('input-hero-major-val');
+  const gpaInput = document.getElementById('input-hero-gpa');
+  const gpaLabelInput = document.getElementById('input-hero-gpa-label');
+  const commitInput = document.getElementById('input-hero-commit');
+  const commitLabelInput = document.getElementById('input-hero-commit-label');
+
+  if (tagInput && document.activeElement !== tagInput) tagInput.value = tag;
+  if (greetingInput && document.activeElement !== greetingInput) greetingInput.value = greeting;
+  if (nameInput && document.activeElement !== nameInput) nameInput.value = name;
+  if (subInput && document.activeElement !== subInput) subInput.value = sub;
+  if (descInput && document.activeElement !== descInput) descInput.value = desc;
+  if (majorIconInput && document.activeElement !== majorIconInput) majorIconInput.value = majorIcon;
+  if (majorLabelInput && document.activeElement !== majorLabelInput) majorLabelInput.value = majorLabel;
+  if (majorValInput && document.activeElement !== majorValInput) majorValInput.value = majorVal;
+  if (gpaInput && document.activeElement !== gpaInput) gpaInput.value = gpa;
+  if (gpaLabelInput && document.activeElement !== gpaLabelInput) gpaLabelInput.value = gpaLabel;
+  if (commitInput && document.activeElement !== commitInput) commitInput.value = commit;
+  if (commitLabelInput && document.activeElement !== commitLabelInput) commitLabelInput.value = commitLabel;
+
+  const thumb = document.getElementById('hero-avatar-thumb');
+  const placeholder = document.getElementById('hero-avatar-placeholder');
+  const clearBtn = document.getElementById('btn-clear-avatar-img');
+
+  if (avatar) {
+    if (thumb) {
+      thumb.src = avatar;
+      thumb.classList.add('has-image');
+    }
+    if (placeholder) placeholder.style.display = 'none';
+    if (clearBtn) clearBtn.style.display = 'inline-block';
+  } else {
+    if (thumb) {
+      thumb.src = '';
+      thumb.classList.remove('has-image');
+    }
+    if (placeholder) placeholder.style.display = 'flex';
+    if (clearBtn) clearBtn.style.display = 'none';
+  }
+
+  updateHeroPreview();
+}
+
+window.handleHeroAvatarUpload = function (fileInput) {
+  const file = fileInput.files && fileInput.files[0];
+  if (!file) return;
+
+  processImageFile(file, (dataUrl) => {
+    currentHeroAvatarBase64 = dataUrl;
+    const thumb = document.getElementById('hero-avatar-thumb');
+    const placeholder = document.getElementById('hero-avatar-placeholder');
+    const clearBtn = document.getElementById('btn-clear-avatar-img');
+
+    if (thumb) {
+      thumb.src = dataUrl;
+      thumb.classList.add('has-image');
+    }
+    if (placeholder) placeholder.style.display = 'none';
+    if (clearBtn) clearBtn.style.display = 'inline-block';
+
+    updateHeroPreview();
+    showToast('โหลดรูปโปรไฟล์เข้าพรีวิวแล้ว (อย่าลืมกดบันทึก)');
+  });
+};
+
+window.clearAvatarImage = function () {
+  currentHeroAvatarBase64 = '';
+  const fileInput = document.getElementById('hero-avatar-file');
+  const thumb = document.getElementById('hero-avatar-thumb');
+  const placeholder = document.getElementById('hero-avatar-placeholder');
+  const clearBtn = document.getElementById('btn-clear-avatar-img');
+
+  if (fileInput) fileInput.value = '';
+  if (thumb) {
+    thumb.src = '';
+    thumb.classList.remove('has-image');
+  }
+  if (placeholder) placeholder.style.display = 'flex';
+  if (clearBtn) clearBtn.style.display = 'none';
+
+  updateHeroPreview();
+  showToast('ลบรูปภาพโปรไฟล์แล้ว (สลับมาใช้ภาพเริ่มต้น)');
+};
+
+window.updateHeroPreview = function () {
+  const tagInput = document.getElementById('input-hero-tag');
+  const greetingInput = document.getElementById('input-hero-greeting');
+  const nameInput = document.getElementById('input-hero-name');
+  const subInput = document.getElementById('input-hero-sub');
+  const descInput = document.getElementById('input-hero-desc');
+  const majorIconInput = document.getElementById('input-hero-major-icon');
+  const majorLabelInput = document.getElementById('input-hero-major-label');
+  const majorValInput = document.getElementById('input-hero-major-val');
+  const gpaInput = document.getElementById('input-hero-gpa');
+  const gpaLabelInput = document.getElementById('input-hero-gpa-label');
+  const commitInput = document.getElementById('input-hero-commit');
+  const commitLabelInput = document.getElementById('input-hero-commit-label');
+
+  const pTag = document.getElementById('preview-hero-tag');
+  const pGreeting = document.getElementById('preview-hero-greeting');
+  const pName = document.getElementById('preview-hero-name');
+  const pSub = document.getElementById('preview-hero-sub');
+  const pDesc = document.getElementById('preview-hero-desc');
+  const pAvatar = document.getElementById('preview-hero-avatar-img');
+  const pBadgeIcon = document.getElementById('preview-hero-badge-icon');
+  const pBadgeLabel = document.getElementById('preview-hero-badge-label');
+  const pBadgeVal = document.getElementById('preview-hero-badge-val');
+  const pStatWorks = document.getElementById('preview-stat-works');
+  const pStatBadgeWorks = document.getElementById('preview-stat-badge-works');
+  const pStatGpa = document.getElementById('preview-stat-gpa');
+  const pStatGpaLabel = document.getElementById('preview-stat-gpa-label');
+  const pStatCommit = document.getElementById('preview-stat-commit');
+  const pStatCommitLabel = document.getElementById('preview-stat-commit-label');
+
+  if (pTag) pTag.innerText = (tagInput && tagInput.value.trim()) || 'คลังเก็บผลงานและใบงานออนไลน์';
+  if (pGreeting) pGreeting.innerText = (greetingInput && greetingInput.value.trim()) || 'สวัสดีครับ, ผม';
+  if (pName) pName.innerText = (nameInput && nameInput.value.trim()) || 'ภควัต';
+  if (pSub) pSub.innerText = (subInput && subInput.value.trim()) || 'ยินดีต้อนรับสู่พื้นที่รวมงาน';
+  if (pDesc) pDesc.innerText = (descInput && descInput.value.trim()) || DEFAULT_PROFILE.heroDesc;
+
+  if (pAvatar) {
+    pAvatar.src = currentHeroAvatarBase64 || 'assets/images/avatar.jpg';
+  }
+
+  if (pBadgeIcon) pBadgeIcon.innerText = (majorIconInput && majorIconInput.value.trim()) || '💻';
+  if (pBadgeLabel) pBadgeLabel.innerText = (majorLabelInput && majorLabelInput.value.trim()) || 'สาขาการเรียน';
+  if (pBadgeVal) pBadgeVal.innerText = (majorValInput && majorValInput.value.trim()) || 'วิทย์-คณิต-คอมฯ';
+
+  if (pStatWorks) pStatWorks.innerText = worksheets.length;
+  if (pStatBadgeWorks) pStatBadgeWorks.innerText = `${worksheets.length} รายการ`;
+
+  if (pStatGpa) pStatGpa.innerText = (gpaInput && gpaInput.value.trim()) || '3.85';
+  if (pStatGpaLabel) pStatGpaLabel.innerText = (gpaLabelInput && gpaLabelInput.value.trim()) || 'เกรดเฉลี่ยสะสม (GPA)';
+  if (pStatCommit) pStatCommit.innerText = (commitInput && commitInput.value.trim()) || '100%';
+  if (pStatCommitLabel) pStatCommitLabel.innerText = (commitLabelInput && commitLabelInput.value.trim()) || 'ความตั้งใจและส่งตรงเวลา';
+};
+
+window.handleHeroSave = function (e) {
+  if (e) e.preventDefault();
+  const tagInput = document.getElementById('input-hero-tag');
+  const greetingInput = document.getElementById('input-hero-greeting');
+  const nameInput = document.getElementById('input-hero-name');
+  const subInput = document.getElementById('input-hero-sub');
+  const descInput = document.getElementById('input-hero-desc');
+  const majorIconInput = document.getElementById('input-hero-major-icon');
+  const majorLabelInput = document.getElementById('input-hero-major-label');
+  const majorValInput = document.getElementById('input-hero-major-val');
+  const gpaInput = document.getElementById('input-hero-gpa');
+  const gpaLabelInput = document.getElementById('input-hero-gpa-label');
+  const commitInput = document.getElementById('input-hero-commit');
+  const commitLabelInput = document.getElementById('input-hero-commit-label');
+
+  if (!profileData) profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
+
+  profileData.heroTag = (tagInput && tagInput.value.trim()) || 'คลังเก็บผลงานและใบงานออนไลน์';
+  profileData.heroGreeting = (greetingInput && greetingInput.value.trim()) || 'สวัสดีครับ, ผม';
+  profileData.heroName = (nameInput && nameInput.value.trim()) || 'ภควัต';
+  profileData.heroSubtitle = (subInput && subInput.value.trim()) || 'ยินดีต้อนรับสู่พื้นที่รวมงาน';
+  profileData.heroDesc = (descInput && descInput.value.trim()) || DEFAULT_PROFILE.heroDesc;
+  profileData.avatarImage = (currentHeroAvatarBase64 !== null) ? currentHeroAvatarBase64 : (profileData.avatarImage || '');
+  profileData.heroMajorIcon = (majorIconInput && majorIconInput.value.trim()) || '💻';
+  profileData.heroMajorLabel = (majorLabelInput && majorLabelInput.value.trim()) || 'สาขาการเรียน';
+  profileData.heroMajorVal = (majorValInput && majorValInput.value.trim()) || 'วิทย์-คณิต-คอมฯ';
+  profileData.heroGpa = (gpaInput && gpaInput.value.trim()) || '3.85';
+  profileData.gpa = profileData.heroGpa;
+  profileData.heroGpaLabel = (gpaLabelInput && gpaLabelInput.value.trim()) || 'เกรดเฉลี่ยสะสม (GPA)';
+  profileData.heroCommitment = (commitInput && commitInput.value.trim()) || '100%';
+  profileData.heroCommitmentLabel = (commitLabelInput && commitLabelInput.value.trim()) || 'ความตั้งใจและส่งตรงเวลา';
+
+  saveProfile();
+  showToast(`บันทึกข้อมูลแบนเนอร์หน้าแรก & รูปโปรไฟล์เรียบร้อย! ✨`);
+};
+
+window.resetHeroDefaults = function () {
+  if (confirm('ต้องการรีเซ็ตแบนเนอร์หน้าแรกและรูปโปรไฟล์กลับเป็นค่าเริ่มต้นหรือไม่?')) {
+    if (!profileData) profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
+    const def = DEFAULT_PROFILE;
+
+    currentHeroAvatarBase64 = '';
+    profileData.heroTag = def.heroTag;
+    profileData.heroGreeting = def.heroGreeting;
+    profileData.heroName = def.heroName;
+    profileData.heroSubtitle = def.heroSubtitle;
+    profileData.heroDesc = def.heroDesc;
+    profileData.avatarImage = '';
+    profileData.heroMajorIcon = def.heroMajorIcon;
+    profileData.heroMajorLabel = def.heroMajorLabel;
+    profileData.heroMajorVal = def.heroMajorVal;
+    profileData.heroGpa = def.heroGpa;
+    profileData.gpa = def.gpa;
+    profileData.heroGpaLabel = def.heroGpaLabel;
+    profileData.heroCommitment = def.heroCommitment;
+    profileData.heroCommitmentLabel = def.heroCommitmentLabel;
+
+    const fileInput = document.getElementById('hero-avatar-file');
+    if (fileInput) fileInput.value = '';
+
+    saveProfile();
+    renderAdminHero();
+    showToast('รีเซ็ตแบนเนอร์หน้าแรกกลับเป็นค่าเริ่มต้นแล้ว');
   }
 };
 

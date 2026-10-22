@@ -204,6 +204,13 @@
               </svg>
               จัดการคลังใบงาน (<span id="tab-works-count">0</span>)
             </button>
+            <button class="admin-tab-btn" id="tab-btn-hero" onclick="switchAdminTab('hero')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              จัดการแบนเนอร์หน้าแรก & รูปโปรไฟล์
+            </button>
             <button class="admin-tab-btn" id="tab-btn-edu" onclick="switchAdminTab('edu')">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
@@ -343,24 +350,51 @@
                   👁️ ตัวอย่างการแสดงผลบนแถบเมนูด้านบน (Live Preview):
                 </div>
                 <div style="display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle); box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
-                  <div class="logo-badge" id="preview-brand-badge" style="width:38px; height:38px; font-size:1.15rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)); color:#000;">P</div>
+                  <div class="logo-badge" id="preview-brand-badge" style="width:38px; height:38px; font-size:1.15rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)); color:#000; overflow:hidden;">P</div>
                   <span style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);" id="preview-brand-text">ภควัต <b style="color:var(--accent-cyan);">Portfolio</b></span>
                 </div>
               </div>
 
               <!-- Edit Form -->
               <form id="brand-settings-form" style="max-width: 650px;" onsubmit="handleBrandSave(event)">
-                <div class="form-group" style="margin-bottom: 1.25rem;">
-                  <label class="form-label" for="input-brand-badge">ตัวอักษรหรือไอคอนในกรอบโลโก้ *</label>
-                  <input type="text" id="input-brand-badge" class="form-input" maxlength="4" placeholder="เช่น P หรือ ภ หรือ 🚀" required oninput="updateBrandPreview()" />
-                  <small style="color: var(--text-dim); font-size: 0.8rem; margin-top: 4px; display: block;">ใส่ตัวอักษร 1-2 ตัว หรืออิโมจิ เพื่อแสดงในกรอบสี่เหลี่ยมโค้งมน</small>
+                <!-- 1. Upload Logo Image -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <label class="form-label" style="margin-bottom:0;">🖼️ อัปโหลดรูปภาพโลโก้เว็บไซต์ (PNG โปร่งใส / JPG / SVG / WebP)</label>
+                    <button type="button" id="btn-clear-logo-img" onclick="clearLogoImage()" style="display:none; font-size:0.8rem; background:none; border:none; color:#ef4444; cursor:pointer; text-decoration:underline;">
+                      ✕ ลบรูปโลโก้ (ใช้ตัวอักษรแทน)
+                    </button>
+                  </div>
+                  
+                  <div class="image-upload-zone" id="brand-logo-dropzone" style="min-height: 100px; padding: 14px; text-align: center;">
+                    <input type="file" id="brand-logo-file" accept="image/*" onchange="handleBrandLogoUpload(this)" />
+                    <div class="upload-placeholder" id="brand-logo-placeholder">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="1.8">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                      </svg>
+                      <span style="font-size:0.92rem; font-weight:600;">คลิกหรือลากไฟล์ภาพโลโก้มาวางที่นี่</span>
+                      <small style="color: var(--text-dim); font-size: 0.78rem;">รองรับไฟล์ PNG (แนะนำพื้นหลังโปร่งใส), JPG, SVG, WebP</small>
+                    </div>
+                    <img id="brand-logo-preview-img" class="upload-preview" alt="ตัวอย่างรูปโลโก้" style="max-height: 80px; object-fit: contain;" />
+                  </div>
                 </div>
 
+                <!-- 2. Text / Icon Badge (Fallback) -->
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                  <label class="form-label" for="input-brand-badge">ตัวอักษรหรือไอคอนย่อ (แสดงเมื่อไม่ได้ใส่รูปภาพโลโก้)</label>
+                  <input type="text" id="input-brand-badge" class="form-input" maxlength="4" placeholder="เช่น P หรือ ภ หรือ 🚀" oninput="updateBrandPreview()" />
+                  <small style="color: var(--text-dim); font-size: 0.8rem; margin-top: 4px; display: block;">ใส่ตัวอักษร 1-2 ตัว หรืออิโมจิ เพื่อแสดงในกรอบสี่เหลี่ยมโค้งมนกรณีไม่ได้อัปโหลดรูปภาพ</small>
+                </div>
+
+                <!-- 3. Main Brand Name -->
                 <div class="form-group" style="margin-bottom: 1.25rem;">
                   <label class="form-label" for="input-brand-name">ชื่อหลัก (Main Brand Name) *</label>
                   <input type="text" id="input-brand-name" class="form-input" placeholder="เช่น ภควัต หรือ Pakawat หรือชื่อของคุณ" required oninput="updateBrandPreview()" />
                 </div>
 
+                <!-- 4. Subtitle / Tag -->
                 <div class="form-group" style="margin-bottom: 1.75rem;">
                   <label class="form-label" for="input-brand-subtitle">คำขยายต่อท้าย (Tag / Subtitle)</label>
                   <input type="text" id="input-brand-subtitle" class="form-input" placeholder="เช่น Portfolio หรือ คลังผลงาน หรือ Studio" oninput="updateBrandPreview()" />
@@ -373,6 +407,190 @@
                   </button>
                   <button type="button" class="btn btn-secondary" onclick="resetBrandDefaults()" style="padding:10px 18px; font-size:0.88rem;">
                     รีเซ็ตกลับเป็นค่าเริ่มต้น
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- ================= TAB 4: HERO BANNER & AVATAR MANAGEMENT ================= -->
+          <div class="admin-tab-content" id="admin-tab-hero" style="display:none;">
+            <div class="content-panel">
+              <div class="panel-header" style="justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                <div>
+                  <h3 class="panel-title" style="display:flex; align-items:center; gap:8px;">
+                    <span>✨</span> จัดการแบนเนอร์หน้าแรก & รูปโปรไฟล์ (Hero Section)
+                  </h3>
+                  <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">
+                    ปรับแต่งรูปภาพอวตาร/โปรไฟล์, ข้อความทักทาย, ชื่อเด่น, ป้ายสาขาวิชา, และสถิติผลการเรียนที่แสดงบนหน้าแรก
+                  </p>
+                </div>
+              </div>
+
+              <!-- Live Preview Card (Matching user screenshot) -->
+              <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 2rem;">
+                <div style="font-size:0.82rem; font-weight:700; color:var(--accent-cyan); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:14px; display:flex; align-items:center; gap:6px;">
+                  <span>👁️</span> ตัวอย่างแสดงผลจริงบนหน้าเว็บ (Live Preview)
+                </div>
+
+                <div class="hero-card" style="margin-bottom:0; box-shadow:none; border:1px solid rgba(197, 155, 109, 0.25);">
+                  <div class="hero-grid">
+                    <div class="hero-info">
+                      <div class="hero-tag">
+                        <span class="pulse-dot"></span>
+                        <span id="preview-hero-tag">คลังเก็บผลงานและใบงานออนไลน์</span>
+                      </div>
+                      <h1 class="hero-title" style="font-size: 1.8rem;">
+                        <span id="preview-hero-greeting">สวัสดีครับ, ผม</span> <span class="highlight" id="preview-hero-name">ภควัต</span> <br>
+                        <span id="preview-hero-sub">ยินดีต้อนรับสู่พื้นที่รวมงาน</span>
+                      </h1>
+                      <p class="hero-desc" id="preview-hero-desc" style="font-size: 0.88rem;">
+                        เว็บไซต์นี้สร้างขึ้นเพื่อรวบรวมและนำเสนอผลงาน ใบงาน การบ้าน และโปรเจกต์ต่าง ๆ ตลอดการศึกษา พร้อมประวัติและทักษะความสามารถ เพื่อเป็นบันทึกการเรียนรู้และการพัฒนาตนเองอย่างต่อเนื่อง
+                      </p>
+
+                      <div class="hero-stats" style="margin-top:1.2rem; padding-top:1rem;">
+                        <div class="stat-item">
+                          <h4 id="preview-stat-works">0</h4>
+                          <p>ใบงานที่บันทึกแล้ว</p>
+                        </div>
+                        <div class="stat-item">
+                          <h4 id="preview-stat-gpa">3.85</h4>
+                          <p id="preview-stat-gpa-label">เกรดเฉลี่ยสะสม (GPA)</p>
+                        </div>
+                        <div class="stat-item">
+                          <h4 id="preview-stat-commit">100%</h4>
+                          <p id="preview-stat-commit-label">ความตั้งใจและส่งตรงเวลา</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="hero-visual">
+                      <div class="avatar-wrapper" style="width: 220px; height: 220px;">
+                        <div class="avatar-halo"></div>
+                        <img src="assets/images/avatar.jpg" alt="Avatar Preview" class="avatar-img" id="preview-hero-avatar-img" />
+
+                        <div class="floating-badge badge-top" style="padding: 6px 12px;">
+                          <div class="badge-icon purple" id="preview-hero-badge-icon" style="font-size: 1rem;">💻</div>
+                          <div class="badge-text">
+                            <div class="title" id="preview-hero-badge-label" style="font-size: 0.68rem;">สาขาการเรียน</div>
+                            <div class="value" id="preview-hero-badge-val" style="font-size: 0.78rem;">วิทย์-คณิต-คอมฯ</div>
+                          </div>
+                        </div>
+
+                        <div class="floating-badge badge-bottom" style="padding: 6px 12px;">
+                          <div class="badge-icon emerald" style="font-size: 1rem;">✨</div>
+                          <div class="badge-text">
+                            <div class="title" style="font-size: 0.68rem;">สถานะผลงาน</div>
+                            <div class="value" id="preview-stat-badge-works" style="font-size: 0.78rem;">0 รายการ</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Edit Form -->
+              <form id="hero-settings-form" style="max-width: 780px;" onsubmit="handleHeroSave(event)">
+                <!-- 1. Avatar Image Upload -->
+                <div class="form-group" style="margin-bottom: 1.75rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <label class="form-label" style="margin-bottom:0;">👤 รูปโปรไฟล์ / อวตาร (Avatar Image)</label>
+                    <button type="button" id="btn-clear-avatar-img" onclick="clearAvatarImage()" style="display:none; font-size:0.8rem; background:none; border:none; color:#ef4444; cursor:pointer; text-decoration:underline;">
+                      ✕ ลบรูปภาพ (ใช้รูปเริ่มต้น)
+                    </button>
+                  </div>
+                  
+                  <div class="image-upload-zone" id="hero-avatar-dropzone" style="min-height: 120px; padding: 16px; text-align: center;">
+                    <input type="file" id="hero-avatar-file" accept="image/*" onchange="handleHeroAvatarUpload(this)" />
+                    <div class="upload-placeholder" id="hero-avatar-placeholder">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="1.8">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                      <span style="font-size:0.92rem; font-weight:600;">คลิกหรือลากไฟล์ภาพโปรไฟล์มาวางที่นี่</span>
+                      <small style="color: var(--text-dim); font-size: 0.78rem;">รองรับไฟล์ JPG, PNG, WebP (แนะนำรูปอัตราส่วน 1:1 หรือสี่เหลี่ยมจัตุรัส)</small>
+                    </div>
+                    <img id="hero-avatar-thumb" class="upload-preview" alt="ตัวอย่างรูปโปรไฟล์" style="max-height: 110px; width:110px; border-radius:50%; object-fit: cover; border: 3px solid var(--accent-cyan);" />
+                  </div>
+                </div>
+
+                <!-- 2. Hero Badge & Greetings -->
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                  <label class="form-label" for="input-hero-tag">ป้ายข้อความขนาดเล็กด้านบน (Hero Badge Tag)</label>
+                  <input type="text" id="input-hero-tag" class="form-input" placeholder="เช่น คลังเก็บผลงานและใบงานออนไลน์" oninput="updateHeroPreview()" />
+                </div>
+
+                <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom: 1.25rem;">
+                  <div class="form-group">
+                    <label class="form-label" for="input-hero-greeting">คำทักทายขึ้นต้น</label>
+                    <input type="text" id="input-hero-greeting" class="form-input" placeholder="เช่น สวัสดีครับ, ผม หรือ ยินดีต้อนรับ" oninput="updateHeroPreview()" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="input-hero-name">ชื่อหลัก (ตัวหนาสีทองไฮไลต์) *</label>
+                    <input type="text" id="input-hero-name" class="form-input" placeholder="เช่น ภควัต หรือชื่อของคุณ" required oninput="updateHeroPreview()" />
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                  <label class="form-label" for="input-hero-sub">คำโปรยบรรทัดที่ 2</label>
+                  <input type="text" id="input-hero-sub" class="form-input" placeholder="เช่น ยินดีต้อนรับสู่พื้นที่รวมงาน" oninput="updateHeroPreview()" />
+                </div>
+
+                <!-- 3. Hero Description / Bio -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                  <label class="form-label" for="input-hero-desc">ข้อความแนะนำตัว / คำอธิบายเว็บไซต์ (Hero Bio / Description)</label>
+                  <textarea id="input-hero-desc" class="form-textarea" rows="3" placeholder="ระบุวัตถุประสงค์เว็บไซต์ หรือแนะนำตนเองสั้น ๆ" oninput="updateHeroPreview()"></textarea>
+                </div>
+
+                <!-- 4. Floating Badge (Top) -->
+                <div style="background: rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:12px; padding:14px; margin-bottom: 1.5rem;">
+                  <div style="font-weight:700; font-size:0.9rem; margin-bottom:10px; color:var(--text-main);">
+                    🏷️ ป้ายลอยด้านบนรูปภาพ (Floating Badge)
+                  </div>
+                  <div style="display:grid; grid-template-columns: 80px 1fr 1.5fr; gap:12px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label class="form-label" for="input-hero-major-icon" style="font-size:0.78rem;">ไอคอน</label>
+                      <input type="text" id="input-hero-major-icon" class="form-input" maxlength="2" placeholder="💻" oninput="updateHeroPreview()" style="text-align:center;" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label class="form-label" for="input-hero-major-label" style="font-size:0.78rem;">หัวข้อป้าย</label>
+                      <input type="text" id="input-hero-major-label" class="form-input" placeholder="เช่น สาขาการเรียน" oninput="updateHeroPreview()" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label class="form-label" for="input-hero-major-val" style="font-size:0.78rem;">ข้อความในป้าย</label>
+                      <input type="text" id="input-hero-major-val" class="form-input" placeholder="เช่น วิทย์-คณิต-คอมฯ หรือ เทคโนโลยีสารสนเทศ" oninput="updateHeroPreview()" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 5. Hero Stats -->
+                <div style="background: rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:12px; padding:14px; margin-bottom: 1.75rem;">
+                  <div style="font-weight:700; font-size:0.9rem; margin-bottom:10px; color:var(--text-main);">
+                    📊 ตัวเลขสถิติผลการเรียน & การส่งงาน
+                  </div>
+                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                    <div>
+                      <label class="form-label" for="input-hero-gpa" style="font-size:0.8rem;">เกรดเฉลี่ย (GPA)</label>
+                      <input type="text" id="input-hero-gpa" class="form-input" placeholder="เช่น 3.85" oninput="updateHeroPreview()" style="margin-bottom:8px;" />
+                      <label class="form-label" for="input-hero-gpa-label" style="font-size:0.78rem; color:var(--text-dim);">ป้ายกำกับ GPA</label>
+                      <input type="text" id="input-hero-gpa-label" class="form-input" placeholder="เกรดเฉลี่ยสะสม (GPA)" oninput="updateHeroPreview()" />
+                    </div>
+                    <div>
+                      <label class="form-label" for="input-hero-commit" style="font-size:0.8rem;">สถิติความตั้งใจ / ส่งตรงเวลา</label>
+                      <input type="text" id="input-hero-commit" class="form-input" placeholder="เช่น 100%" oninput="updateHeroPreview()" style="margin-bottom:8px;" />
+                      <label class="form-label" for="input-hero-commit-label" style="font-size:0.78rem; color:var(--text-dim);">ป้ายกำกับ</label>
+                      <input type="text" id="input-hero-commit-label" class="form-input" placeholder="ความตั้งใจและส่งตรงเวลา" oninput="updateHeroPreview()" />
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                  <button type="submit" class="btn btn-cyan" style="padding:10px 24px; font-size:0.95rem; font-weight:600;">
+                    💾 บันทึกข้อมูลแบนเนอร์หน้าแรก
+                  </button>
+                  <button type="button" class="btn btn-secondary" onclick="resetHeroDefaults()" style="padding:10px 18px; font-size:0.88rem;">
+                    🔄 รีเซ็ตกลับเป็นค่าเริ่มต้น
                   </button>
                 </div>
               </form>

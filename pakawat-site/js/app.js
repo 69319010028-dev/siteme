@@ -404,7 +404,17 @@ function renderProfileInfo() {
 
   const badgeEl = document.getElementById('site-brand-badge');
   const textEl = document.getElementById('site-brand-text');
-  if (badgeEl) badgeEl.innerText = badge;
+  if (badgeEl) {
+    if (profile.brandLogoImage) {
+      badgeEl.innerHTML = `<img src="${profile.brandLogoImage}" alt="Logo" class="logo-badge-img" style="width:100%; height:100%; object-fit:cover; display:block;" />`;
+      badgeEl.style.background = 'transparent';
+      badgeEl.style.padding = '0';
+    } else {
+      badgeEl.innerText = badge;
+      badgeEl.style.background = 'var(--grad-primary)';
+      badgeEl.style.padding = '';
+    }
+  }
   if (textEl) {
     textEl.innerHTML = `${brandName} ${brandSub ? `<b>${brandSub}</b>` : ''}`;
   }
@@ -412,6 +422,64 @@ function renderProfileInfo() {
   const footerTitle = document.getElementById('footer-brand-title');
   if (footerTitle) {
     footerTitle.innerText = `${brandName} ${brandSub ? `(${brandSub})` : ''} Portfolio & Worksheets`;
+  }
+
+  // --- Dynamic Hero Banner Elements ---
+  const heroTagEl = document.getElementById('hero-tag-text');
+  if (heroTagEl) {
+    heroTagEl.innerText = profile.heroTag || 'คลังเก็บผลงานและใบงานออนไลน์';
+  }
+  const heroGreetingEl = document.getElementById('hero-greeting-text');
+  if (heroGreetingEl) {
+    heroGreetingEl.innerText = profile.heroGreeting || 'สวัสดีครับ, ผม';
+  }
+  const heroNameEl = document.getElementById('hero-name-text');
+  if (heroNameEl) {
+    heroNameEl.innerText = profile.heroName || profile.brandTitle || 'ภควัต';
+  }
+  const heroSubEl = document.getElementById('hero-sub-text');
+  if (heroSubEl) {
+    heroSubEl.innerText = profile.heroSubtitle || 'ยินดีต้อนรับสู่พื้นที่รวมงาน';
+  }
+  const heroDescEl = document.getElementById('hero-desc-text');
+  if (heroDescEl) {
+    heroDescEl.innerText = profile.heroDesc || DEFAULT_PROFILE.heroDesc;
+  }
+  const statGpaVal = document.getElementById('stat-gpa-val');
+  if (statGpaVal) {
+    statGpaVal.innerText = profile.heroGpa || profile.gpa || '3.85';
+  }
+  const statGpaLabel = document.getElementById('stat-gpa-label');
+  if (statGpaLabel) {
+    statGpaLabel.innerText = profile.heroGpaLabel || 'เกรดเฉลี่ยสะสม (GPA)';
+  }
+  const statCommitVal = document.getElementById('stat-commit-val');
+  if (statCommitVal) {
+    statCommitVal.innerText = profile.heroCommitment || '100%';
+  }
+  const statCommitLabel = document.getElementById('stat-commit-label');
+  if (statCommitLabel) {
+    statCommitLabel.innerText = profile.heroCommitmentLabel || 'ความตั้งใจและส่งตรงเวลา';
+  }
+  const heroAvatarImg = document.getElementById('hero-avatar-img');
+  if (heroAvatarImg) {
+    heroAvatarImg.src = profile.avatarImage || 'assets/images/avatar.jpg';
+  }
+  const sidebarAvatarImg = document.getElementById('sidebar-avatar-img');
+  if (sidebarAvatarImg) {
+    sidebarAvatarImg.src = profile.avatarImage || 'assets/images/avatar.jpg';
+  }
+  const heroMajorIcon = document.getElementById('hero-badge-top-icon');
+  if (heroMajorIcon) {
+    heroMajorIcon.innerText = profile.heroMajorIcon || '💻';
+  }
+  const heroMajorLabel = document.getElementById('hero-badge-top-label');
+  if (heroMajorLabel) {
+    heroMajorLabel.innerText = profile.heroMajorLabel || 'สาขาการเรียน';
+  }
+  const heroMajorVal = document.getElementById('hero-badge-top-val');
+  if (heroMajorVal) {
+    heroMajorVal.innerText = profile.heroMajorVal || 'วิทย์-คณิต-คอมฯ';
   }
 
   // Update order toggle button text if present

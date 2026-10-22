@@ -122,6 +122,7 @@ const DEFAULT_WORKSHEETS = [
 
 const DEFAULT_PROFILE = {
   brandBadge: "P",
+  brandLogoImage: "",
   brandTitle: "ภควัต",
   brandSubtitle: "Portfolio",
   name: "ภควัต ศรีรัตน์",
@@ -136,6 +137,20 @@ const DEFAULT_PROFILE = {
   location: "นครศรีธรรมราช, ประเทศไทย",
   gpa: "3.85",
   academicYear: "2567 - 2568",
+  // Hero Banner Section Defaults
+  heroTag: "คลังเก็บผลงานและใบงานออนไลน์",
+  heroGreeting: "สวัสดีครับ, ผม",
+  heroName: "ภควัต",
+  heroSubtitle: "ยินดีต้อนรับสู่พื้นที่รวมงาน",
+  heroDesc: "เว็บไซต์นี้สร้างขึ้นเพื่อรวบรวมและนำเสนอผลงาน ใบงาน การบ้าน และโปรเจกต์ต่าง ๆ ตลอดการศึกษา พร้อมประวัติและทักษะความสามารถ เพื่อเป็นบันทึกการเรียนรู้และการพัฒนาตนเองอย่างต่อเนื่อง",
+  avatarImage: "",
+  heroMajorIcon: "💻",
+  heroMajorLabel: "สาขาการเรียน",
+  heroMajorVal: "วิทย์-คณิต-คอมฯ",
+  heroGpa: "3.85",
+  heroGpaLabel: "เกรดเฉลี่ยสะสม (GPA)",
+  heroCommitment: "100%",
+  heroCommitmentLabel: "ความตั้งใจและส่งตรงเวลา",
   skills: [
     { name: "HTML5 / CSS3 / JavaScript", level: 90 },
     { name: "Python / Data Science เบื้องต้น", level: 75 },
