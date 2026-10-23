@@ -1208,7 +1208,10 @@ function setupEventListeners() {
     }
   });
 
-  // Image Upload Handling (Add Modal)
+  // Image & PDF Upload Handling (Add Modal)
+  let currentAddPdfBase64 = null;
+  let currentEditPdfBase64 = null;
+
   const addFileInput = document.getElementById('add-image-file');
   const addPlaceholder = document.getElementById('add-upload-placeholder');
   const addPreview = document.getElementById('add-image-preview');
@@ -1218,8 +1221,11 @@ function setupEventListeners() {
     addFileInput.addEventListener('change', (e) => {
       const file = e.target.files && e.target.files[0];
       if (file) {
-        processImageFile(file, (dataUrl) => {
+        processImageFile(file, (dataUrl, pdfUrl) => {
           currentAddImageBase64 = dataUrl;
+          if (pdfUrl) {
+            currentAddPdfBase64 = pdfUrl;
+          }
           if (addPreview) {
             addPreview.src = dataUrl;
             addPreview.classList.add('has-image');
@@ -1234,6 +1240,7 @@ function setupEventListeners() {
   if (btnRemoveAddImage) {
     btnRemoveAddImage.addEventListener('click', () => {
       currentAddImageBase64 = null;
+      currentAddPdfBase64 = null;
       if (addFileInput) addFileInput.value = '';
       if (addPreview) {
         addPreview.src = '';
@@ -1244,15 +1251,18 @@ function setupEventListeners() {
     });
   }
 
-  // Image Upload Handling (Edit Modal)
+  // Image & PDF Upload Handling (Edit Modal)
   const editFileInput = document.getElementById('edit-image-file');
   const editPreview = document.getElementById('edit-image-preview');
   if (editFileInput) {
     editFileInput.addEventListener('change', (e) => {
       const file = e.target.files && e.target.files[0];
       if (file) {
-        processImageFile(file, (dataUrl) => {
+        processImageFile(file, (dataUrl, pdfUrl) => {
           currentEditImageBase64 = dataUrl;
+          if (pdfUrl) {
+            currentEditPdfBase64 = pdfUrl;
+          }
           if (editPreview) {
             editPreview.src = dataUrl;
             editPreview.classList.add('has-image');
@@ -1283,12 +1293,16 @@ function setupEventListeners() {
       const sampleImages = ['assets/images/work1.jpg', 'assets/images/work2.jpg', 'assets/images/work3.jpg'];
       const chosenImage = currentAddImageBase64 || sampleImages[Math.floor(Math.random() * sampleImages.length)];
 
+      const chosenPdf = currentAddPdfBase64 || (getPdfEmbedUrl(link) ? link : '');
+      const finalLink = link || currentAddPdfBase64 || '';
+
       const newWork = {
         id: 'work-' + Date.now(),
         title: title,
         date: formattedDate,
         rawDate: rawDate,
-        link: link,
+        link: finalLink,
+        pdfUrl: chosenPdf,
         subject: 'ใบงานการเรียนรู้',
         category: 'web',
         status: 'done',
@@ -1303,7 +1317,7 @@ function setupEventListeners() {
         ],
         tools: ['เอกสารประกอบการเรียน', 'คอมพิวเตอร์'],
         instructorComment: 'บันทึกในระบบเรียบร้อยแล้ว',
-        fileLink: link || '#'
+        fileLink: finalLink || '#'
       };
 
       worksheets.unshift(newWork);
@@ -1314,6 +1328,7 @@ function setupEventListeners() {
 
       // Reset image preview state & link input
       currentAddImageBase64 = null;
+      currentAddPdfBase64 = null;
       if (addFileInput) addFileInput.value = '';
       if (linkInput) linkInput.value = '';
       if (addPreview) {
@@ -1352,13 +1367,26 @@ function setupEventListeners() {
           targetWork.date = formatThaiDate(rawDate);
           targetWork.rawDate = rawDate;
         }
-        targetWork.link = newLink;
-        targetWork.fileLink = newLink || '#';
+        if (newLink) {
+          targetWork.link = newLink;
+          targetWork.fileLink = newLink;
+          if (getPdfEmbedUrl(newLink)) {
+            targetWork.pdfUrl = newLink;
+          }
+        }
         targetWork.description = `บันทึกผลงานและใบงาน: ${newTitle}`;
         if (currentEditImageBase64) {
           targetWork.image = currentEditImageBase64;
         }
+        if (currentEditPdfBase64) {
+          targetWork.pdfUrl = currentEditPdfBase64;
+          if (!newLink) {
+            targetWork.link = currentEditPdfBase64;
+            targetWork.fileLink = currentEditPdfBase64;
+          }
+        }
         currentEditImageBase64 = null;
+        currentEditPdfBase64 = null;
 
         saveWorksheets();
         renderAll();
@@ -1640,6 +1668,77 @@ function processImageFile(file, callback, maxDim = 1200, quality = 0.84) {
       return callback(rawResult);
     }
 
+// Helper: Create stylish SVG preview thumbnail for uploaded PDF
+function createPdfThumbnailSvg(fileName) {
+  const safeName = (fileName || 'เอกสาร PDF').replace(/[<>&"]/g, '');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
+    <defs>
+      <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#241a14"/>
+        <stop offset="100%" stop-color="#140f0c"/>
+      </linearGradient>
+      <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#d4a373"/>
+        <stop offset="100%" stop-color="#c86d51"/>
+      </linearGradient>
+    </defs>
+    <rect width="600" height="400" fill="url(#bgGrad)"/>
+    <rect x="30" y="30" width="540" height="340" rx="16" fill="none" stroke="rgba(212,163,115,0.35)" stroke-width="2" stroke-dasharray="6,6"/>
+    <rect x="225" y="70" width="150" height="190" rx="12" fill="#2d211a" stroke="url(#accentGrad)" stroke-width="3"/>
+    <path d="M335 70 L375 110 L335 110 Z" fill="#d4a373"/>
+    <text x="300" y="175" font-family="'Prompt', sans-serif" font-size="34" font-weight="bold" fill="#ef4444" text-anchor="middle">PDF</text>
+    <text x="300" y="210" font-family="'Prompt', sans-serif" font-size="13" fill="#d4a373" text-anchor="middle">เอกสารประกอบใบงาน</text>
+    <text x="300" y="300" font-family="'Prompt', sans-serif" font-size="16" font-weight="600" fill="#fbf7f2" text-anchor="middle">${safeName.length > 36 ? safeName.substring(0, 33) + '...' : safeName}</text>
+    <text x="300" y="330" font-family="'Prompt', sans-serif" font-size="13" fill="#998471" text-anchor="middle">คลิกเพื่อเปิดอ่านเอกสาร PDF ในเว็บ 📖</text>
+  </svg>`;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+
+// Helper: Convert direct PDF or Google Drive URL to embeddable preview URL
+function getPdfEmbedUrl(url) {
+  if (!url) return null;
+  const trimmed = String(url).trim();
+  if (trimmed.startsWith('data:application/pdf')) {
+    return trimmed;
+  }
+  // Google Drive
+  const driveMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveMatch) {
+    return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+  }
+  // Direct PDF
+  if (trimmed.toLowerCase().endsWith('.pdf') || trimmed.toLowerCase().includes('.pdf?')) {
+    return trimmed;
+  }
+  return null;
+}
+
+function processImageFile(file, callback, maxDim = 1200, quality = 0.84) {
+  if (!file) return;
+
+  // Handle PDF files
+  if (file.type === 'application/pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'))) {
+    if (file.size > 2.5 * 1024 * 1024) {
+      alert(`⚠️ ไฟล์ PDF นี้มีขนาด ${(file.size / (1024 * 1024)).toFixed(1)} MB (ค่อนข้างใหญ่)\n\nเพื่อให้เว็บไซต์เปิดได้เร็วและสามารถซิงค์ขึ้นคลาวด์ได้ แนะนำให้อัปโหลดไฟล์ลง Google Drive แล้วนำลิงก์มาวางในช่อง "ลิงก์ผลงานภายนอก" แทนนะครับ`);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const pdfDataUrl = e.target.result;
+      const pdfThumb = createPdfThumbnailSvg(file.name);
+      callback(pdfThumb, pdfDataUrl, file.name);
+    };
+    reader.readAsDataURL(file);
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const rawResult = e.target.result;
+    if (file.type === 'image/svg+xml' || rawResult.startsWith('data:image/svg+xml')) {
+      return callback(rawResult);
+    }
+
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
@@ -1688,12 +1787,16 @@ window.openWorkDetail = function(id) {
   const contentEl = document.getElementById('worksheet-detail-content');
   if (!contentEl) return;
 
+  const pdfEmbedUrl = getPdfEmbedUrl(work.pdfUrl || work.link || work.fileLink || (work.image && work.image.startsWith('data:application/pdf') ? work.image : ''));
+  const isPdf = Boolean(pdfEmbedUrl);
+  const fileLinkUrl = work.pdfUrl || work.link || work.fileLink;
+
   contentEl.innerHTML = `
-    <div class="detail-preview-container" onclick="openLightbox('${work.id}')" title="คลิกเพื่อดูรูปภาพขนาดใหญ่เต็มจอ (ความละเอียดสูง)">
-      <img src="${work.image || 'assets/images/work1.jpg'}" alt="${work.title}" class="detail-preview-img" style="max-height: 520px; object-fit: contain; width: 100%; display: block;" />
+    <div class="detail-preview-container" onclick="openLightbox('${work.id}')" title="คลิกเพื่อดูรูปภาพขนาดใหญ่เต็มจอ">
+      <img src="${work.image || 'assets/images/work1.jpg'}" alt="${work.title}" class="detail-preview-img" style="max-height: 480px; object-fit: contain; width: 100%; display: block;" />
       <div class="detail-preview-hint">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-        คลิกดูภาพขนาดใหญ่เต็มจอ (ความละเอียดสูง)
+        ${isPdf ? 'คลิกดูภาพหน้าปกเอกสารขนาดเต็ม' : 'คลิกดูภาพขนาดใหญ่เต็มจอ (ความละเอียดสูง)'}
       </div>
     </div>
     
@@ -1705,9 +1808,24 @@ window.openWorkDetail = function(id) {
 
       <h2 style="font-size: 1.45rem; color: var(--text-main); font-weight: 700; line-height: 1.4; margin-bottom: 0.75rem;">${work.title}</h2>
 
-      ${work.link ? `
+      ${isPdf ? `
+        <!-- Interactive In-Site PDF Reader -->
+        <div class="embedded-pdf-reader" style="margin-top: 1.25rem; border-radius: 12px; overflow: hidden; border: 1px solid rgba(197, 155, 109, 0.35); background: rgba(0,0,0,0.35); box-shadow: 0 8px 25px rgba(0,0,0,0.4);">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 16px; background: rgba(197, 155, 109, 0.12); border-bottom: 1px solid rgba(197, 155, 109, 0.25); flex-wrap:wrap; gap:8px;">
+            <span style="font-weight:700; color:var(--accent-gold); font-size:0.92rem; display:flex; align-items:center; gap:8px;">
+              <span style="font-size:1.15rem;">📄</span> เปิดอ่านเอกสาร PDF ในเว็บ (Interactive PDF Reader)
+            </span>
+            <a href="${formatUrl(fileLinkUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="font-size:0.8rem; padding:6px 14px; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+              <span>↗️ เปิดอ่านเต็มจอ (แท็บใหม่)</span>
+            </a>
+          </div>
+          <iframe src="${pdfEmbedUrl}" style="width:100%; height:550px; border:none; display:block; background:#fff;" title="PDF Reader"></iframe>
+        </div>
+      ` : ''}
+
+      ${fileLinkUrl && fileLinkUrl !== '#' && !isPdf ? `
         <div style="margin-top: 1rem;">
-          <a href="${formatUrl(work.link)}" target="_blank" rel="noopener noreferrer" class="btn btn-cyan" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; font-size:0.95rem; text-decoration:none; border-radius:var(--radius-md);">
+          <a href="${formatUrl(fileLinkUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-cyan" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; font-size:0.95rem; text-decoration:none; border-radius:var(--radius-md);">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
             🔗 เปิดดูลิงก์ผลงาน / ไฟล์งาน
           </a>

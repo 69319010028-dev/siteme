@@ -1762,6 +1762,10 @@ body {
   transition: transform 0.3s ease;
 }
 
+#worksheet-detail-modal .modal-dialog {
+  max-width: 860px;
+}
+
 .modal-backdrop.active .modal-dialog {
   transform: translateY(0);
 }

@@ -1343,12 +1343,24 @@ function setupEventListeners() {
   const addPreview = document.getElementById('add-image-preview');
   const btnRemoveAddImage = document.getElementById('btn-remove-add-image');
 
+  // Image & PDF Upload Handling (Add Modal)
+  let currentAddPdfBase64 = null;
+  let currentEditPdfBase64 = null;
+
+  const addFileInput = document.getElementById('add-image-file');
+  const addPlaceholder = document.getElementById('add-upload-placeholder');
+  const addPreview = document.getElementById('add-image-preview');
+  const btnRemoveAddImage = document.getElementById('btn-remove-add-image');
+
   if (addFileInput) {
     addFileInput.addEventListener('change', (e) => {
       const file = e.target.files && e.target.files[0];
       if (file) {
-        processImageFile(file, (dataUrl) => {
+        processImageFile(file, (dataUrl, pdfUrl) => {
           currentAddImageBase64 = dataUrl;
+          if (pdfUrl) {
+            currentAddPdfBase64 = pdfUrl;
+          }
           if (addPreview) {
             addPreview.src = dataUrl;
             addPreview.classList.add('has-image');
@@ -1363,6 +1375,7 @@ function setupEventListeners() {
   if (btnRemoveAddImage) {
     btnRemoveAddImage.addEventListener('click', () => {
       currentAddImageBase64 = null;
+      currentAddPdfBase64 = null;
       if (addFileInput) addFileInput.value = '';
       if (addPreview) {
         addPreview.src = '';
@@ -1390,13 +1403,16 @@ function setupEventListeners() {
 
       const sampleImages = ['assets/images/work1.jpg', 'assets/images/work2.jpg', 'assets/images/work3.jpg'];
       const chosenImage = currentAddImageBase64 || sampleImages[Math.floor(Math.random() * sampleImages.length)];
+      const chosenPdf = currentAddPdfBase64 || (getPdfEmbedUrl(link) ? link : '');
+      const finalLink = link || currentAddPdfBase64 || '';
 
       const newWork = {
         id: 'work-' + Date.now(),
         title: title,
         date: formattedDate,
         rawDate: rawDate,
-        link: link,
+        link: finalLink,
+        pdfUrl: chosenPdf,
         subject: 'ใบงานการเรียนรู้',
         status: 'done',
         statusText: 'ส่งแล้ว',
@@ -1409,7 +1425,7 @@ function setupEventListeners() {
         ],
         tools: ['เอกสารประกอบการเรียน', 'คอมพิวเตอร์'],
         instructorComment: 'บันทึกในระบบเรียบร้อยแล้ว',
-        fileLink: link || '#'
+        fileLink: finalLink || '#'
       };
 
       worksheets.unshift(newWork);
@@ -1418,6 +1434,7 @@ function setupEventListeners() {
       addForm.reset();
 
       currentAddImageBase64 = null;
+      currentAddPdfBase64 = null;
       if (addFileInput) addFileInput.value = '';
       if (addPreview) {
         addPreview.src = '';
@@ -1430,15 +1447,18 @@ function setupEventListeners() {
     });
   }
 
-  // Edit Worksheet Image Upload
+  // Edit Worksheet Image & PDF Upload
   const editFileInput = document.getElementById('edit-image-file');
   const editPreview = document.getElementById('edit-image-preview');
   if (editFileInput) {
     editFileInput.addEventListener('change', (e) => {
       const file = e.target.files && e.target.files[0];
       if (file) {
-        processImageFile(file, (dataUrl) => {
+        processImageFile(file, (dataUrl, pdfUrl) => {
           currentEditImageBase64 = dataUrl;
+          if (pdfUrl) {
+            currentEditPdfBase64 = pdfUrl;
+          }
           if (editPreview) {
             editPreview.src = dataUrl;
             editPreview.classList.add('has-image');
@@ -1471,12 +1491,25 @@ function setupEventListeners() {
           target.date = formatThaiDate(rawDate);
           target.rawDate = rawDate;
         }
-        target.link = newLink;
-        target.fileLink = newLink || '#';
+        if (newLink) {
+          target.link = newLink;
+          target.fileLink = newLink;
+          if (getPdfEmbedUrl(newLink)) {
+            target.pdfUrl = newLink;
+          }
+        }
         if (currentEditImageBase64) {
           target.image = currentEditImageBase64;
         }
+        if (currentEditPdfBase64) {
+          target.pdfUrl = currentEditPdfBase64;
+          if (!newLink) {
+            target.link = currentEditPdfBase64;
+            target.fileLink = currentEditPdfBase64;
+          }
+        }
         currentEditImageBase64 = null;
+        currentEditPdfBase64 = null;
 
         saveWorksheets();
         closeAllModals();
@@ -2015,9 +2048,71 @@ function initInteractiveCalendar(containerId, inputId, labelId, initialDateStr, 
   };
 }
 
-/* ---------------- Helper: Image Processing & Formatters ---------------- */
+// Helper: Create stylish SVG preview thumbnail for uploaded PDF
+function createPdfThumbnailSvg(fileName) {
+  const safeName = (fileName || 'เอกสาร PDF').replace(/[<>&"]/g, '');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
+    <defs>
+      <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#241a14"/>
+        <stop offset="100%" stop-color="#140f0c"/>
+      </linearGradient>
+      <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#d4a373"/>
+        <stop offset="100%" stop-color="#c86d51"/>
+      </linearGradient>
+    </defs>
+    <rect width="600" height="400" fill="url(#bgGrad)"/>
+    <rect x="30" y="30" width="540" height="340" rx="16" fill="none" stroke="rgba(212,163,115,0.35)" stroke-width="2" stroke-dasharray="6,6"/>
+    <rect x="225" y="70" width="150" height="190" rx="12" fill="#2d211a" stroke="url(#accentGrad)" stroke-width="3"/>
+    <path d="M335 70 L375 110 L335 110 Z" fill="#d4a373"/>
+    <text x="300" y="175" font-family="'Prompt', sans-serif" font-size="34" font-weight="bold" fill="#ef4444" text-anchor="middle">PDF</text>
+    <text x="300" y="210" font-family="'Prompt', sans-serif" font-size="13" fill="#d4a373" text-anchor="middle">เอกสารประกอบใบงาน</text>
+    <text x="300" y="300" font-family="'Prompt', sans-serif" font-size="16" font-weight="600" fill="#fbf7f2" text-anchor="middle">${safeName.length > 36 ? safeName.substring(0, 33) + '...' : safeName}</text>
+    <text x="300" y="330" font-family="'Prompt', sans-serif" font-size="13" fill="#998471" text-anchor="middle">คลิกเพื่อเปิดอ่านเอกสาร PDF ในเว็บ 📖</text>
+  </svg>`;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+
+// Helper: Convert direct PDF or Google Drive URL to embeddable preview URL
+function getPdfEmbedUrl(url) {
+  if (!url) return null;
+  const trimmed = String(url).trim();
+  if (trimmed.startsWith('data:application/pdf')) {
+    return trimmed;
+  }
+  // Google Drive
+  const driveMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveMatch) {
+    return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+  }
+  // Direct PDF
+  if (trimmed.toLowerCase().endsWith('.pdf') || trimmed.toLowerCase().includes('.pdf?')) {
+    return trimmed;
+  }
+  return null;
+}
+
+/* ---------------- Helper: Image & PDF Processing & Formatters ---------------- */
 function processImageFile(file, callback, maxDim = 1200, quality = 0.84) {
   if (!file) return;
+
+  // Handle PDF files
+  if (file.type === 'application/pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'))) {
+    if (file.size > 2.5 * 1024 * 1024) {
+      alert(`⚠️ ไฟล์ PDF นี้มีขนาด ${(file.size / (1024 * 1024)).toFixed(1)} MB (ค่อนข้างใหญ่)\n\nเพื่อให้เว็บไซต์เปิดได้เร็วและสามารถซิงค์ขึ้นคลาวด์ได้ แนะนำให้อัปโหลดไฟล์ลง Google Drive แล้วนำลิงก์มาวางในช่อง "ลิงก์ผลงานภายนอก" แทนนะครับ`);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const pdfDataUrl = e.target.result;
+      const pdfThumb = createPdfThumbnailSvg(file.name);
+      callback(pdfThumb, pdfDataUrl, file.name);
+    };
+    reader.readAsDataURL(file);
+    return;
+  }
+
   const reader = new FileReader();
 
   reader.onload = (e) => {

@@ -1544,18 +1544,18 @@ IoT & Microcontrollers Innovation ⚡
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
               </svg>
-              ลิงก์ผลงานภายนอก / ไฟล์งาน (Google Drive, GitHub, Canva, เว็บไซต์ ฯลฯ)
+              ลิงก์ผลงานภายนอก / ไฟล์งาน (Google Drive PDF, Canva, GitHub, เว็บไซต์ ฯลฯ)
             </label>
             <input type="url" id="add-link" class="form-input"
               placeholder="https://drive.google.com/... หรือ https://github.com/..." />
             <small
-              style="color: var(--text-dim); font-size: 0.8rem; display: block; margin-top: 4px;">ใส่ลิงก์เพื่อให้คุณครูสามารถคลิกเข้าไปดูไฟล์งานจริงหรือสไลด์ผลงานได้</small>
+              style="color: var(--text-dim); font-size: 0.8rem; display: block; margin-top: 4px;">💡 หากใส่ลิงก์ PDF จาก Google Drive หรือไฟล์ .pdf ระบบจะเปิดตัวอ่าน PDF ในหน้าเว็บให้อัตโนมัติ</small>
           </div>
 
           <div class="form-group">
-            <label class="form-label">รูปภาพใบงาน (ความละเอียดสูง คมชัดเต็มร้อย)</label>
+            <label class="form-label">รูปภาพใบงาน หรืออัปโหลดไฟล์เอกสาร PDF</label>
             <div class="image-upload-zone" id="add-image-dropzone">
-              <input type="file" id="add-image-file" accept="image/*" />
+              <input type="file" id="add-image-file" accept="image/*,application/pdf,.pdf" />
               <div class="upload-placeholder" id="add-upload-placeholder">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)"
                   stroke-width="1.8">
@@ -1563,8 +1563,8 @@ IoT & Microcontrollers Innovation ⚡
                   <circle cx="8.5" cy="8.5" r="1.5"></circle>
                   <polyline points="21 15 16 10 5 21"></polyline>
                 </svg>
-                <span>คลิกหรือลากไฟล์รูปภาพมาวางที่นี่</span>
-                <small style="color: var(--text-dim); font-size: 0.8rem;">รองรับไฟล์รูปภาพ JPG, PNG, WebP</small>
+                <span>คลิกหรือลากไฟล์ภาพ หรือไฟล์ PDF มาวางที่นี่</span>
+                <small style="color: var(--text-dim); font-size: 0.8rem;">รองรับไฟล์ภาพ JPG, PNG, WebP หรือเอกสาร PDF</small>
               </div>
               <img id="add-image-preview" class="upload-preview" alt="ตัวอย่างรูปใบงาน" />
             </div>
@@ -1622,15 +1622,15 @@ IoT & Microcontrollers Innovation ⚡
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
               </svg>
-              ลิงก์ผลงานภายนอก / ไฟล์งาน (Google Drive, GitHub, Canva ฯลฯ)
+              ลิงก์ผลงานภายนอก / ไฟล์งาน (Google Drive PDF, Canva, GitHub ฯลฯ)
             </label>
             <input type="url" id="edit-link" class="form-input" placeholder="https://..." />
           </div>
 
           <div class="form-group">
-            <label class="form-label">เปลี่ยนรูปภาพใบงาน (ถ้าไม่เปลี่ยนจะใช้รูปเดิม)</label>
+            <label class="form-label">เปลี่ยนรูปภาพหรือไฟล์ PDF ใบงาน (ถ้าไม่เปลี่ยนจะใช้รูปเดิม)</label>
             <div class="image-upload-zone" id="edit-image-dropzone">
-              <input type="file" id="edit-image-file" accept="image/*" />
+              <input type="file" id="edit-image-file" accept="image/*,application/pdf,.pdf" />
               <div class="upload-placeholder" id="edit-upload-placeholder" style="display: none;">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)"
                   stroke-width="1.8">
