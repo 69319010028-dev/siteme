@@ -403,6 +403,48 @@ function saveWorksheets() {
 }
 
 /* ---------------- Navigation / Routing ---------------- */
+function switchView(viewName) {
+  if (!viewName) viewName = 'home';
+  viewName = String(viewName).replace('#', '').trim();
+  if (!views[viewName]) viewName = 'home';
+
+  // Toggle active views
+  Object.keys(views).forEach(k => {
+    if (views[k]) {
+      if (k === viewName) {
+        views[k].classList.add('active');
+        views[k].style.display = 'block';
+      } else {
+        views[k].classList.remove('active');
+        views[k].style.display = 'none';
+      }
+    }
+  });
+
+  // Toggle active nav links
+  const allNavItems = document.querySelectorAll('.nav-item');
+  allNavItems.forEach(item => {
+    if (item.getAttribute('data-target') === viewName) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+
+  // Update hash without triggering redundant events
+  if (window.location.hash.replace('#', '') !== viewName) {
+    try {
+      history.replaceState(null, '', '#' + viewName);
+    } catch (e) {
+      window.location.hash = viewName;
+    }
+  }
+
+  // Scroll smoothly to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+window.switchView = switchView;
+
 function setupNavigation() {
   // Check URL Hash on load
   const hash = window.location.hash.replace('#', '') || 'home';
@@ -413,13 +455,33 @@ function setupNavigation() {
     switchView(newHash);
   });
 
-  navItems.forEach(item => {
+  // Direct click handler for main nav items
+  document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
-      e.preventDefault();
       const targetView = item.getAttribute('data-target');
-      window.location.hash = targetView;
-      if (navMenu.classList.contains('open')) {
+      if (targetView) {
+        e.preventDefault();
+        switchView(targetView);
+      }
+      if (navMenu && navMenu.classList.contains('open')) {
         navMenu.classList.remove('open');
+      }
+    });
+  });
+
+  // Direct click handler for all in-page hash links (hero buttons, catalog cards, footer links)
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
+      if (href && href.length > 1) {
+        const targetView = href.replace('#', '');
+        if (views[targetView]) {
+          e.preventDefault();
+          switchView(targetView);
+          if (navMenu && navMenu.classList.contains('open')) {
+            navMenu.classList.remove('open');
+          }
+        }
       }
     });
   });
@@ -430,31 +492,14 @@ function setupNavigation() {
       navMenu.classList.toggle('open');
     });
   }
-}
 
-function switchView(viewName) {
-  if (!views[viewName]) viewName = 'home';
-
-  // Toggle active views
-  Object.keys(views).forEach(k => {
-    if (k === viewName) {
-      views[k].classList.add('active');
-    } else {
-      views[k].classList.remove('active');
+  // Secret Owner Shortcut: Press Ctrl + Shift + A to open Admin Portal
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+      e.preventDefault();
+      window.location.href = 'admin.html';
     }
   });
-
-  // Toggle active nav links
-  navItems.forEach(item => {
-    if (item.getAttribute('data-target') === viewName) {
-      item.classList.add('active');
-    } else {
-      item.classList.remove('active');
-    }
-  });
-
-  // Scroll to top
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /* ---------------- Render Functions ---------------- */
@@ -1657,20 +1702,15 @@ function closeAllModals() {
   if (changePinModal) changePinModal.classList.remove('active');
 }
 
-/* ---------------- Helper: Process & Keep High-Res Image File ---------------- */
-function processImageFile(file, callback, maxDim = 1200, quality = 0.84) {
-  if (!file) return;
-  const reader = new FileReader();
-
-  reader.onload = (e) => {
-    const rawResult = e.target.result;
-    if (file.type === 'image/svg+xml' || rawResult.startsWith('data:image/svg+xml')) {
-      return callback(rawResult);
-    }
+/* ---------------- Helper: Process & Keep High-Res Image & PDF Files ---------------- */
 
 // Helper: Create stylish SVG preview thumbnail for uploaded PDF
 function createPdfThumbnailSvg(fileName) {
-  const safeName = (fileName || 'เอกสาร PDF').replace(/[<>&"]/g, '');
+  const safeName = String(fileName || 'เอกสาร PDF')
+    .replaceAll('<', '')
+    .replaceAll('>', '')
+    .replaceAll('&', '')
+    .replaceAll('"', '');
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
     <defs>
       <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">

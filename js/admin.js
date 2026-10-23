@@ -1337,12 +1337,6 @@ function setupEventListeners() {
     }
   });
 
-  // Add Worksheet Image Upload
-  const addFileInput = document.getElementById('add-image-file');
-  const addPlaceholder = document.getElementById('add-upload-placeholder');
-  const addPreview = document.getElementById('add-image-preview');
-  const btnRemoveAddImage = document.getElementById('btn-remove-add-image');
-
   // Image & PDF Upload Handling (Add Modal)
   let currentAddPdfBase64 = null;
   let currentEditPdfBase64 = null;
@@ -2050,7 +2044,11 @@ function initInteractiveCalendar(containerId, inputId, labelId, initialDateStr, 
 
 // Helper: Create stylish SVG preview thumbnail for uploaded PDF
 function createPdfThumbnailSvg(fileName) {
-  const safeName = (fileName || 'เอกสาร PDF').replace(/[<>&"]/g, '');
+  const safeName = String(fileName || 'เอกสาร PDF')
+    .replaceAll('<', '')
+    .replaceAll('>', '')
+    .replaceAll('&', '')
+    .replaceAll('"', '');
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
     <defs>
       <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">

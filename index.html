@@ -220,7 +220,7 @@
           </div>
 
           <div class="cards-grid-3">
-            <div class="feature-box">
+            <div class="feature-box" onclick="window.switchView ? window.switchView('home') : (location.hash='home')" style="cursor: pointer;">
               <div class="feature-icon-wrapper">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -229,12 +229,12 @@
               </div>
               <h3>1. แนะนำตนเอง</h3>
               <p>ทำความรู้จักกับตัวตน ความสนใจ และภาพรวมของคลังสะสมผลงานในการศึกษา</p>
-              <button class="link-arrow" onclick="location.hash='home'">
+              <button class="link-arrow" type="button">
                 อยู่ที่หน้านี้แล้ว
               </button>
             </div>
 
-            <div class="feature-box">
+            <div class="feature-box" onclick="window.switchView ? window.switchView('profile') : (location.hash='profile')" style="cursor: pointer;">
               <div class="feature-icon-wrapper" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -243,12 +243,12 @@
               </div>
               <h3>2. ประวัติส่วนตัว</h3>
               <p>ประวัติการศึกษา ความสามารถ ทักษะทางคอมพิวเตอร์ และช่องทางติดต่อสื่อสาร</p>
-              <button class="link-arrow" onclick="location.hash='profile'">
+              <button class="link-arrow" type="button">
                 ไปยังหน้าประวัติส่วนตัว →
               </button>
             </div>
 
-            <div class="feature-box">
+            <div class="feature-box" onclick="window.switchView ? window.switchView('worksheets') : (location.hash='worksheets')" style="cursor: pointer;">
               <div class="feature-icon-wrapper"
                 style="background: rgba(236, 72, 153, 0.15); color: var(--accent-pink);">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -259,7 +259,7 @@
               </div>
               <h3>3. หน้าใบงานและผลงาน</h3>
               <p>คลังรวบรวมใบงาน รายละเอียดคะแนน คำแนะนำอาจารย์ พร้อมฟังก์ชันค้นหาและเพิ่มใบงานใหม่</p>
-              <button class="link-arrow" onclick="location.hash='worksheets'">
+              <button class="link-arrow" type="button">
                 เปิดดูคลังใบงาน →
               </button>
             </div>
