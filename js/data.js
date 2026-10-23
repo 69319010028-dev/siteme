@@ -71,73 +71,27 @@ const DEFAULT_WORKSHEETS = [
     instructorComment: "ฮาร์ดแวร์ทำงานเสถียร แสดงผลบนแดชบอร์ดได้แม่นยำมาก ขอชมเชย",
     fileLink: "#",
     isFeatured: true
-  },
-  {
-    id: "work-4",
-    title: "ใบงานที่ 4: การวิเคราะห์ข้อมูลสถิติคะแนนสอบด้วย Python & Pandas",
-    workshopNum: "Workshop 4",
-    subject: "วิทยาศาสตร์ข้อมูลเบื้องต้น",
-    category: "code",
-    date: "05 มกราคม 2025",
-    status: "done",
-    statusText: "ส่งแล้ว (รอผลตรวจ)",
-    score: "กำลังตรวจ",
-    grade: "-",
-    image: "assets/images/work1.jpg",
-    description: "ทำความสะอาดข้อมูล (Data Cleaning) และวิเคราะห์สถิติเชิงพรรณนา พร้อมสร้าง Data Visualization เช่น Boxplot, Histogram เพื่อหา Insight จากคะแนนสอบจำลอง",
-    objectives: [
-      "ประมวลผลข้อมูล Missing Values ด้วย Pandas",
-      "สร้างกราฟสถิติด้วย Matplotlib และ Seaborn",
-      "สรุปผลการวิเคราะห์ในรูปแบบรายงานสรุป"
-    ],
-    tools: ["Python", "Pandas", "Matplotlib", "Jupyter Notebook"],
-    instructorComment: "รอประกาศผลการประเมินจากอาจารย์ผู้สอน",
-    fileLink: "#",
-    isFeatured: false
-  },
-  {
-    id: "work-5",
-    title: "ใบงานที่ 5: ออกแบบสื่อโปสเตอร์อินโฟกราฟิก รณรงค์การรู้เท่าทันไซเบอร์",
-    workshopNum: "Workshop 5",
-    subject: "การสื่อสารและสารสนเทศ",
-    category: "design",
-    date: "20 มกราคม 2025",
-    status: "reviewed",
-    statusText: "ตรวจแล้ว (10/10)",
-    score: "10 / 10",
-    grade: "A",
-    image: "assets/images/work2.jpg",
-    description: "สรุปเนื้อหาภัยคุกคามทางไซเบอร์ เช่น Phishing, Social Engineering และรหัสผ่านที่ปลอดภัย มานำเสนอในรูปแบบภาพโปสเตอร์ที่เข้าใจง่าย น่าดึงดูดสำหรับเยาวชน",
-    objectives: [
-      "สรุปข้อมูลที่ซับซ้อนให้กระชับและตรงจุด",
-      "จัดวาง Visual Hierarchy และ Typography",
-      "เผยแพร่สู่ชุมชนโรงเรียน"
-    ],
-    tools: ["Canva Pro", "Photoshop", "Infographic Design"],
-    instructorComment: "สื่อสารเนื้อหาได้กระชับ รูปแบบเข้าใจง่าย เหมาะแก่การนำไปติดบอร์ดประชาสัมพันธ์",
-    fileLink: "#",
-    isFeatured: false
   }
 ];
 
 const DEFAULT_PROFILE = {
-  siteTitle: "ภควัต (Pakawat) | พอร์ตโฟลิโอ & คลังเก็บใบงาน",
-  siteFavicon: "🚀",
-  brandBadge: "P",
-  brandLogoImage: "",
-  brandTitle: "ภควัต",
-  brandSubtitle: "Portfolio",
+  siteTitle: "Pakawat Srirat | พอร์ตโฟลิโอ & คลังเก็บใบงาน",
+  siteFavicon: "assets/images/OIP.webp",
+  brandBadge: "",
+  brandLogoImage: "assets/images/OIP.webp",
+  brandTitle: "Pakawat",
+  brandSubtitle: "Srirat",
   name: "ภควัต ศรีรัตน์",
   fullname: "นายภควัต ศรีรัตน์",
   nickname: "ซัง",
-  role: "นักศึกษา ปวส. เทคโนโลยีสารสนเทศ",
+  role: "นักศึกษา ปวส. สาขาเทคโนโลยีสารสนเทศ คอมพิวเตอร์",
   bio: "มีความชื่นชอบและหลงใหลในการเรียนรู้สิ่งใหม่ ๆ ด้านคอมพิวเตอร์ การเขียนโปรแกรม และการพัฒนาเว็บไซต์ มุ่งมั่นสร้างสรรค์ผลงานคุณภาพในทุกใบงาน",
   school: "วิทยาลัยเทคนิคนครศรีธรรมราช",
   level: "ประกาศนียบัตรวิชาชีพชั้นสูง (ปวส.)",
   email: "69319010028@tnk.ac.th",
   phone: "099-436-2677",
   location: "นครศรีธรรมราช, ประเทศไทย",
-  gpa: "3.85",
+  gpa: "3.88",
   academicYear: "2567 - 2568",
   // Hero Banner Section Defaults
   heroTag: "คลังเก็บผลงานและใบงานออนไลน์",
@@ -145,8 +99,8 @@ const DEFAULT_PROFILE = {
   heroName: "ภควัต",
   heroSubtitle: "ยินดีต้อนรับสู่พื้นที่รวมงาน",
   heroDesc: "เว็บไซต์นี้สร้างขึ้นเพื่อรวบรวมและนำเสนอผลงาน ใบงาน การบ้าน และโปรเจกต์ต่าง ๆ ตลอดการศึกษา พร้อมประวัติและทักษะความสามารถ เพื่อเป็นบันทึกการเรียนรู้และการพัฒนาตนเองอย่างต่อเนื่อง",
-  avatarImage: "",
-  heroBannerImage: "",
+  avatarImage: "assets/images/avatar.jpg",
+  heroBannerImage: "assets/images/858979244_1774317823827162_4518473138288594674_n.jpg",
   heroBannerBg: "",
   heroBannerOverlay: "70",
   heroBannerHeight: "",
@@ -155,13 +109,13 @@ const DEFAULT_PROFILE = {
   heroAvatarZoom: "100",
   heroAvatarPosY: "50",
   heroMajorIcon: "💻",
-  heroMajorLabel: "สาขาการเรียน",
-  heroMajorVal: "วิทย์-คณิต-คอมฯ",
-  heroGpa: "3.85",
+  heroMajorLabel: "สาขาเทคโนโลยีสารสนเทศ",
+  heroMajorVal: "คอมพิวเตอร์",
+  heroGpa: "3.88",
   heroGpaLabel: "เกรดเฉลี่ยสะสม (GPA)",
   heroCommitment: "100%",
   heroCommitmentLabel: "ความตั้งใจและส่งตรงเวลา",
-  // Profile Bio Card Defaults (หน้านี้ด้วย)
+  // Profile Bio Card Defaults
   profileCardBg: "",
   profileCardBannerImage: "",
   profileCardOverlay: "70",
@@ -202,8 +156,8 @@ const DEFAULT_PROFILE = {
       title: "ระดับประกาศนียบัตรวิชาชีพชั้นสูง (ปวส.)",
       sub: "วิทยาลัยเทคนิคนครศรีธรรมราช",
       desc: "แผนกวิชาเทคโนโลยีสารสนเทศ / คอมพิวเตอร์ มุ่งเน้นการพัฒนาเว็บไซต์ เครือข่าย และระบบดิจิทัล",
-      logo: "assets/images/logo_school_vocational.svg",
-      image: "assets/images/logo_school_vocational.svg"
+      logo: "assets/images/OIP.webp",
+      image: "assets/images/OIP.webp"
     }
   ]
 };

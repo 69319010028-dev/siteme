@@ -3204,6 +3204,30 @@ body {
   animation: realtimeSyncFlash 1.2s ease-out;
 }
 
+.realtime-live-badge .pulse-yellow-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #eab308;
+  box-shadow: 0 0 8px #eab308;
+  animation: realtimeYellowPulse 2s infinite ease-in-out;
+}
+
+@keyframes realtimeYellowPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
+  }
+  70% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 6px rgba(234, 179, 8, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(234, 179, 8, 0);
+  }
+}
+
 
 
 

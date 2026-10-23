@@ -194,6 +194,21 @@ function initData() {
     profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
     localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(profileData));
   }
+
+  // Auto-upgrade if local cache still has old v1 placeholder values
+  if (profileData && profileData.brandTitle === 'ภควัต' && !profileData.brandLogoImage && (profileData.heroGpa === '3.85' || !profileData.avatarImage)) {
+    profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
+    localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(profileData));
+  }
+  if (worksheets && worksheets.length === 5 && worksheets.some(w => w.id === 'work-5')) {
+    worksheets = JSON.parse(JSON.stringify(DEFAULT_WORKSHEETS));
+    localStorage.setItem(STORAGE_WORKS_KEY, JSON.stringify(worksheets));
+  }
+
+  // Initialize Cloud Sync in Admin
+  if (typeof CloudSync !== 'undefined') {
+    CloudSync.init();
+  }
 }
 
 function saveWorksheets() {
@@ -203,6 +218,13 @@ function saveWorksheets() {
     adminFilterCalendarInstance.refresh();
   }
   broadcastRealtimeSync('WORKSHEETS_UPDATED', { count: worksheets.length });
+  if (typeof CloudSync !== 'undefined') {
+    CloudSync.saveToCloud(profileData, worksheets).then(res => {
+      if (res && res.success) {
+        showToast('☁️ ใบงานซิงค์ขึ้น Google Cloud แล้ว! ทุกคนที่เปิดเว็บจะเห็นทันที');
+      }
+    });
+  }
 }
 
 function saveProfile() {
@@ -211,6 +233,13 @@ function saveProfile() {
   renderAdminBrand();
   renderAdminHero();
   broadcastRealtimeSync('PROFILE_UPDATED');
+  if (typeof CloudSync !== 'undefined') {
+    CloudSync.saveToCloud(profileData, worksheets).then(res => {
+      if (res && res.success) {
+        showToast('☁️ ข้อมูลส่วนตัวซิงค์ขึ้น Google Cloud แล้ว! ทุกคนจะเห็นอัปเดตทันที');
+      }
+    });
+  }
 }
 
 /* ---------------- Tab Switching ---------------- */
@@ -220,27 +249,34 @@ window.switchAdminTab = function (tabName) {
   const tabBrand = document.getElementById('admin-tab-brand');
   const tabHero = document.getElementById('admin-tab-hero');
   const tabBackup = document.getElementById('admin-tab-backup');
+  const tabCloud = document.getElementById('admin-tab-cloud');
   const btnWorks = document.getElementById('tab-btn-works');
   const btnEdu = document.getElementById('tab-btn-edu');
   const btnBrand = document.getElementById('tab-btn-brand');
   const btnHero = document.getElementById('tab-btn-hero');
   const btnBackup = document.getElementById('tab-btn-backup');
+  const btnCloud = document.getElementById('tab-btn-cloud');
 
   if (tabWorks) tabWorks.style.display = (tabName === 'works') ? 'block' : 'none';
   if (tabEdu) tabEdu.style.display = (tabName === 'edu') ? 'block' : 'none';
   if (tabBrand) tabBrand.style.display = (tabName === 'brand') ? 'block' : 'none';
   if (tabHero) tabHero.style.display = (tabName === 'hero') ? 'block' : 'none';
   if (tabBackup) tabBackup.style.display = (tabName === 'backup') ? 'block' : 'none';
+  if (tabCloud) tabCloud.style.display = (tabName === 'cloud') ? 'block' : 'none';
 
   if (btnWorks) btnWorks.classList.toggle('active', tabName === 'works');
   if (btnEdu) btnEdu.classList.toggle('active', tabName === 'edu');
   if (btnBrand) btnBrand.classList.toggle('active', tabName === 'brand');
   if (btnHero) btnHero.classList.toggle('active', tabName === 'hero');
   if (btnBackup) btnBackup.classList.toggle('active', tabName === 'backup');
+  if (btnCloud) btnCloud.classList.toggle('active', tabName === 'cloud');
 
   if (tabName === 'backup') {
     if (typeof renderBackupStats === 'function') renderBackupStats();
     if (typeof renderLocalSnapshots === 'function') renderLocalSnapshots();
+  }
+  if (tabName === 'cloud') {
+    if (typeof renderAdminCloud === 'function') renderAdminCloud();
   }
 };
 
@@ -2240,3 +2276,425 @@ function renderLocalSnapshots() {
     </div>
   `;
 }
+
+/* ---------------- Real-Time Cloud Sync (Google Firebase) Management ---------------- */
+function renderAdminCloud() {
+  const cfg = (typeof getActiveFirebaseConfig === 'function') ? getActiveFirebaseConfig() : {};
+  const status = (typeof CloudSync !== 'undefined') ? CloudSync.getStatus() : { isConnected: false };
+
+  const apiKeyInput = document.getElementById('cloud-cfg-api-key');
+  const projectIdInput = document.getElementById('cloud-cfg-project-id');
+  const authDomainInput = document.getElementById('cloud-cfg-auth-domain');
+  const storageBucketInput = document.getElementById('cloud-cfg-storage-bucket');
+  const messagingIdInput = document.getElementById('cloud-cfg-messaging-id');
+  const appIdInput = document.getElementById('cloud-cfg-app-id');
+  const syncInfoEl = document.getElementById('admin-cloud-sync-info');
+
+  if (apiKeyInput && cfg.apiKey) apiKeyInput.value = cfg.apiKey;
+  if (projectIdInput && cfg.projectId) projectIdInput.value = cfg.projectId;
+  if (authDomainInput && cfg.authDomain) authDomainInput.value = cfg.authDomain;
+  if (storageBucketInput && cfg.storageBucket) storageBucketInput.value = cfg.storageBucket;
+  if (messagingIdInput && cfg.messagingSenderId) messagingIdInput.value = cfg.messagingSenderId;
+  if (appIdInput && cfg.appId) appIdInput.value = cfg.appId;
+
+  if (syncInfoEl) {
+    if (status.isConnected) {
+      const syncDate = status.lastSync ? new Date(status.lastSync).toLocaleString('th-TH') : 'เพิ่งซิงค์';
+      syncInfoEl.innerHTML = `🟢 เชื่อมต่อโปรเจกต์ <b>${cfg.projectId}</b> เรียบร้อย (ซิงค์ล่าสุด: ${syncDate}) — ทุกคนที่เปิดลิงก์เห็นข้อมูลอัปเดตตรงกันทันที!`;
+    } else {
+      syncInfoEl.innerText = 'เมื่อเชื่อมต่อแล้ว ไม่ว่าจะแก้ไขใบงาน รูปภาพ หรือเกรดเฉลี่ย ทุกคนที่เปิดลิงก์ Vercel จะเห็นข้อมูลอัปเดตสดทันทีโดยไม่ต้อง Export';
+    }
+  }
+
+  if (typeof CloudSync !== 'undefined') {
+    CloudSync.updateBadgeUI(status.isConnected);
+  }
+}
+
+// Automatically parse javascript / JSON object from Firebase console
+window.handleAutoParseFirebaseConfig = function (text) {
+  if (!text || !text.trim()) return;
+  const str = text.trim();
+
+  // Try parsing apiKey, projectId, authDomain, storageBucket, messagingSenderId, appId
+  const extract = (key) => {
+    const regex = new RegExp(`['"]?${key}['"]?\\s*:\\s*['"]([^'"]+)['"]`, 'i');
+    const match = str.match(regex);
+    return match ? match[1] : '';
+  };
+
+  const apiKey = extract('apiKey');
+  const projectId = extract('projectId');
+  const authDomain = extract('authDomain');
+  const storageBucket = extract('storageBucket');
+  const messagingSenderId = extract('messagingSenderId');
+  const appId = extract('appId');
+
+  if (apiKey || projectId) {
+    if (apiKey) document.getElementById('cloud-cfg-api-key').value = apiKey;
+    if (projectId) document.getElementById('cloud-cfg-project-id').value = projectId;
+    if (authDomain) document.getElementById('cloud-cfg-auth-domain').value = authDomain;
+    if (storageBucket) document.getElementById('cloud-cfg-storage-bucket').value = storageBucket;
+    if (messagingSenderId) document.getElementById('cloud-cfg-messaging-id').value = messagingSenderId;
+    if (appId) document.getElementById('cloud-cfg-app-id').value = appId;
+
+    showToast('✨ แยกค่า Firebase Config อัตโนมัติเรียบร้อย! กดปุ่มบันทึกเพื่อเริ่มใช้งาน');
+  }
+};
+
+window.handleSaveCloudConfig = async function (e) {
+  if (e) e.preventDefault();
+  const apiKey = document.getElementById('cloud-cfg-api-key').value.trim();
+  const projectId = document.getElementById('cloud-cfg-project-id').value.trim();
+  const authDomain = document.getElementById('cloud-cfg-auth-domain').value.trim();
+  const storageBucket = document.getElementById('cloud-cfg-storage-bucket').value.trim();
+  const messagingSenderId = document.getElementById('cloud-cfg-messaging-id').value.trim();
+  const appId = document.getElementById('cloud-cfg-app-id').value.trim();
+
+  if (!apiKey || !projectId) {
+    showToast('กรุณากรอก API Key และ Project ID ให้ครบถ้วน', 'error');
+    return;
+  }
+
+  const configObj = {
+    apiKey,
+    projectId,
+    authDomain: authDomain || `${projectId}.firebaseapp.com`,
+    storageBucket: storageBucket || `${projectId}.appspot.com`,
+    messagingSenderId,
+    appId
+  };
+
+  const resultEl = document.getElementById('cloud-test-result');
+  if (resultEl) {
+    resultEl.style.display = 'block';
+    resultEl.style.background = 'rgba(56, 189, 248, 0.15)';
+    resultEl.style.border = '1px solid rgba(56, 189, 248, 0.4)';
+    resultEl.style.color = '#38bdf8';
+    resultEl.innerText = '⏳ กำลังทดสอบและบันทึกการเชื่อมต่อ Google Firebase...';
+  }
+
+  const test = await CloudSync.testConnection(configObj);
+  if (!test.success) {
+    if (resultEl) {
+      resultEl.style.background = 'rgba(239, 68, 68, 0.15)';
+      resultEl.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+      resultEl.style.color = '#f87171';
+      resultEl.innerHTML = `❌ เชื่อมต่อไม่สำเร็จ: ${test.message}`;
+    }
+    showToast('การเชื่อมต่อล้มเหลว ตรวจสอบค่า Config หรือ Security Rules', 'error');
+    return;
+  }
+
+  // Save config
+  CloudSync.saveConfig(configObj);
+  CloudSync.init();
+
+  // Push current data immediately to cloud
+  const pushRes = await CloudSync.saveToCloud(profileData, worksheets);
+
+  if (resultEl) {
+    resultEl.style.background = 'rgba(16, 185, 129, 0.15)';
+    resultEl.style.border = '1px solid rgba(16, 185, 129, 0.4)';
+    resultEl.style.color = '#34d399';
+    resultEl.innerHTML = `✅ เชื่อมต่อ Google Firebase สำเร็จ 100%! อัปโหลดข้อมูลขึ้นคลาวด์แล้ว ทุกคนที่เปิดเว็บจะเห็นข้อมูลอัปเดตแบบเรียลไทม์ทันที 🚀`;
+  }
+
+  renderAdminCloud();
+  showToast('🎉 บันทึกการเชื่อมต่อและซิงค์ข้อมูลขึ้นคลาวด์เรียบร้อยแล้ว!');
+};
+
+window.handleTestCloudConnection = async function () {
+  const apiKey = document.getElementById('cloud-cfg-api-key').value.trim();
+  const projectId = document.getElementById('cloud-cfg-project-id').value.trim();
+  const authDomain = document.getElementById('cloud-cfg-auth-domain').value.trim();
+  const storageBucket = document.getElementById('cloud-cfg-storage-bucket').value.trim();
+  const messagingSenderId = document.getElementById('cloud-cfg-messaging-id').value.trim();
+  const appId = document.getElementById('cloud-cfg-app-id').value.trim();
+
+  const configObj = {
+    apiKey,
+    projectId,
+    authDomain: authDomain || `${projectId}.firebaseapp.com`,
+    storageBucket: storageBucket || `${projectId}.appspot.com`,
+    messagingSenderId,
+    appId
+  };
+
+  const resultEl = document.getElementById('cloud-test-result');
+  if (resultEl) {
+    resultEl.style.display = 'block';
+    resultEl.style.background = 'rgba(56, 189, 248, 0.15)';
+    resultEl.style.border = '1px solid rgba(56, 189, 248, 0.4)';
+    resultEl.style.color = '#38bdf8';
+    resultEl.innerText = '⏳ กำลังทดสอบเชื่อมต่อไปยัง Firebase Firestore...';
+  }
+
+  const test = await CloudSync.testConnection(configObj);
+  if (resultEl) {
+    if (test.success) {
+      resultEl.style.background = 'rgba(16, 185, 129, 0.15)';
+      resultEl.style.border = '1px solid rgba(16, 185, 129, 0.4)';
+      resultEl.style.color = '#34d399';
+      resultEl.innerHTML = `✅ ${test.message}`;
+    } else {
+      resultEl.style.background = 'rgba(239, 68, 68, 0.15)';
+      resultEl.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+      resultEl.style.color = '#f87171';
+      resultEl.innerHTML = `❌ ${test.message}`;
+    }
+  }
+};
+
+window.handlePushAllToCloud = async function () {
+  if (typeof CloudSync === 'undefined' || !CloudSync.getStatus().isConnected) {
+    showToast('กรุณาบันทึกและเชื่อมต่อ Firebase ด้านล่างก่อนครับ', 'error');
+    return;
+  }
+
+  showToast('⏳ กำลังอัปโหลดข้อมูลทั้งหมดขึ้นคลาวด์...');
+  const res = await CloudSync.saveToCloud(profileData, worksheets);
+  if (res && res.success) {
+    showToast('☁️ อัปโหลดข้อมูลทั้งหมดขึ้น Google Cloud สำเร็จเรียบร้อย! ✨');
+    renderAdminCloud();
+  } else {
+    showToast(`เกิดข้อผิดพลาด: ${res ? res.error : 'ไม่สามารถบันทึกได้'}`, 'error');
+  }
+};
+
+window.handlePullFromCloud = async function () {
+  if (typeof CloudSync === 'undefined' || !CloudSync.getStatus().isConnected) {
+    showToast('กรุณาเชื่อมต่อ Firebase ก่อนครับ', 'error');
+    return;
+  }
+
+  showToast('⏳ กำลังดึงข้อมูลล่าสุดจากคลาวด์...');
+  try {
+    const config = getActiveFirebaseConfig();
+    const app = firebase.app();
+    const doc = await app.firestore().collection('pakawat_site_data').doc('main_content').get();
+    if (doc.exists) {
+      const data = doc.data();
+      if (data.worksheets && Array.isArray(data.worksheets)) {
+        worksheets = data.worksheets;
+        localStorage.setItem(STORAGE_WORKS_KEY, JSON.stringify(worksheets));
+      }
+      if (data.profile && typeof data.profile === 'object') {
+        profileData = data.profile;
+        localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(profileData));
+      }
+      renderAdminAll();
+      showToast('📥 ดึงข้อมูลล่าสุดจากคลาวด์และอัปเดตหน้าจอเรียบร้อย!');
+    } else {
+      showToast('ยังไม่มีข้อมูลบนคลาวด์ กรุณากดปุ่ม "อัปโหลดข้อมูลขึ้นคลาวด์เดี๋ยวนี้" ก่อนครับ');
+    }
+  } catch (err) {
+    showToast(`ดึงข้อมูลไม่สำเร็จ: ${err.message}`, 'error');
+  }
+};
+
+window.handleDisconnectCloud = function () {
+  if (confirm('คุณต้องการยกเลิกการเชื่อมต่อคลาวด์และกลับมาใช้โหมดออฟไลน์/โลคอลใช่หรือไม่?')) {
+    if (typeof CloudSync !== 'undefined') {
+      CloudSync.clearConfig();
+    }
+    renderAdminCloud();
+    showToast('ยกเลิกการเชื่อมต่อคลาวด์แล้ว (กลับสู่โหมดทำงานในเครื่อง)');
+  }
+};
+
+// Export active state as a complete data.js file
+window.handleDownloadDataJs = function () {
+  const currentWorks = worksheets || DEFAULT_WORKSHEETS;
+  const currentProf = profileData || DEFAULT_PROFILE;
+
+  const code = `/**
+ * Default sample data for Pakawat Portfolio & Worksheet Hub
+ * Updated automatically from Admin Portal
+ */
+
+const DEFAULT_WORKSHEETS = ${JSON.stringify(currentWorks, null, 2)};
+
+const DEFAULT_PROFILE = ${JSON.stringify(currentProf, null, 2)};
+
+// Helper: Convert hex or color string to rgba
+function hexToRgba(hexOrColor, opacity) {
+  if (!hexOrColor) return \`rgba(20, 14, 10, \${opacity})\`;
+  const trimmed = String(hexOrColor).trim();
+  if (trimmed.startsWith('#')) {
+    let c = trimmed.substring(1);
+    if (c.length === 3) c = c.split('').map(x => x + x).join('');
+    if (c.length === 6) {
+      const num = parseInt(c, 16);
+      if (!isNaN(num)) {
+        const r = (num >> 16) & 255;
+        const g = (num >> 8) & 255;
+        const b = num & 255;
+        return \`rgba(\${r}, \${g}, \${b}, \${opacity})\`;
+      }
+    }
+  } else if (trimmed.startsWith('rgb')) {
+    return trimmed;
+  }
+  return \`rgba(20, 14, 10, \${opacity})\`;
+}
+
+// Helper: Apply hero card background image, background color, gradient overlay, min-height, and image fit
+function applyHeroCardBackground(el, imgUrl, bgColor, overlayPercent, minHeight, bgFit) {
+  if (!el) return;
+  const opacityVal = (overlayPercent !== undefined && overlayPercent !== null && overlayPercent !== '')
+    ? Math.max(0, Math.min(100, parseInt(overlayPercent, 10))) / 100
+    : 0.70;
+
+  if (minHeight && parseInt(minHeight, 10) > 0) {
+    el.style.minHeight = \`\${parseInt(minHeight, 10)}px\`;
+  } else {
+    el.style.minHeight = '';
+  }
+
+  const fitVal = (bgFit && String(bgFit).trim()) || 'cover';
+
+  if (imgUrl) {
+    el.classList.add('has-bg-image');
+    const topOverlay = hexToRgba(bgColor || '#140e0a', Math.max(0.18, opacityVal - 0.12));
+    const bottomOverlay = hexToRgba(bgColor || '#140e0a', Math.min(0.98, opacityVal + 0.15));
+    el.style.backgroundImage = \`linear-gradient(\${topOverlay}, \${bottomOverlay}), url('\${imgUrl}')\`;
+    el.style.backgroundSize = fitVal;
+    el.style.backgroundPosition = 'center';
+    el.style.backgroundRepeat = 'no-repeat';
+    if (bgColor) el.style.backgroundColor = bgColor;
+  } else if (bgColor) {
+    el.classList.remove('has-bg-image');
+    el.style.backgroundImage = 'none';
+    el.style.backgroundColor = bgColor;
+    el.style.backgroundSize = '';
+    el.style.backgroundPosition = '';
+    el.style.backgroundRepeat = '';
+  } else {
+    el.classList.remove('has-bg-image');
+    el.style.backgroundImage = '';
+    el.style.backgroundColor = '';
+    el.style.backgroundSize = '';
+    el.style.backgroundPosition = '';
+    el.style.backgroundRepeat = '';
+  }
+}
+
+// Helper: Apply avatar frame sizing, internal image zoom, and vertical focus position
+function applyAvatarStyles(wrapperEl, imgEl, size, zoom, posY, isPreview = false) {
+  if (wrapperEl) {
+    if (size && parseInt(size, 10) > 0) {
+      const parsedSize = parseInt(size, 10);
+      const actualSize = isPreview ? Math.round(parsedSize * 0.62) : parsedSize;
+      wrapperEl.style.width = \`\${actualSize}px\`;
+      wrapperEl.style.height = \`\${actualSize}px\`;
+    } else {
+      wrapperEl.style.width = '';
+      wrapperEl.style.height = '';
+    }
+  }
+
+  if (imgEl) {
+    const scaleVal = (zoom && parseInt(zoom, 10) > 0) ? parseInt(zoom, 10) / 100 : 1;
+    imgEl.style.transform = scaleVal !== 1 ? \`scale(\${scaleVal})\` : '';
+    const posVal = (posY !== undefined && posY !== null && posY !== '') ? parseInt(posY, 10) : 50;
+    imgEl.style.objectPosition = \`center \${posVal}%\`;
+  }
+}
+
+// Helper: Apply profile card styling (background image, color, gradient overlay, and fit)
+function applyProfileCardBackground(el, imgUrl, bgColor, overlayPercent, bgFit) {
+  if (!el) return;
+  const opacityVal = (overlayPercent !== undefined && overlayPercent !== null && overlayPercent !== '')
+    ? Math.max(0, Math.min(100, parseInt(overlayPercent, 10))) / 100
+    : 0.70;
+  const fitVal = (bgFit && String(bgFit).trim()) || 'cover';
+
+  if (imgUrl) {
+    el.classList.add('has-bg-image');
+    const topOverlay = hexToRgba(bgColor || '#140e0a', Math.max(0.20, opacityVal - 0.15));
+    const bottomOverlay = hexToRgba(bgColor || '#140e0a', Math.min(0.98, opacityVal + 0.15));
+    el.style.backgroundImage = \`linear-gradient(\${topOverlay}, \${bottomOverlay}), url('\${imgUrl}')\`;
+    el.style.backgroundSize = fitVal;
+    el.style.backgroundPosition = 'center';
+    el.style.backgroundRepeat = 'no-repeat';
+    if (bgColor) el.style.backgroundColor = bgColor;
+  } else if (bgColor) {
+    el.classList.remove('has-bg-image');
+    el.style.backgroundImage = 'none';
+    el.style.backgroundColor = bgColor;
+    el.style.backgroundSize = '';
+    el.style.backgroundPosition = '';
+    el.style.backgroundRepeat = '';
+  } else {
+    el.classList.remove('has-bg-image');
+    el.style.backgroundImage = '';
+    el.style.backgroundColor = '';
+    el.style.backgroundSize = '';
+    el.style.backgroundPosition = '';
+    el.style.backgroundRepeat = '';
+  }
+}
+`;
+
+  const blob = new Blob([code], { type: 'application/javascript;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'data.js';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showToast('📥 ดาวน์โหลดไฟล์ data.js สำเร็จ! นำไปวางทับใน js/data.js เพื่ออัปโหลดขึ้น GitHub ได้เลย');
+};
+
+/* ---------------- Magic Link Share Generator (Zero-Hassle Instant Sharing) ---------------- */
+window.copyMagicShareLink = function () {
+  const currentWorks = worksheets || DEFAULT_WORKSHEETS;
+  const currentProf = profileData || DEFAULT_PROFILE;
+
+  const payload = {
+    p: currentProf,
+    w: currentWorks,
+    t: Date.now()
+  };
+
+  const jsonStr = JSON.stringify(payload);
+  const base64Str = btoa(unescape(encodeURIComponent(jsonStr)));
+
+  let baseUrl = window.location.origin + window.location.pathname.replace('admin.html', '').replace('admin', '');
+  if (!baseUrl.endsWith('/')) baseUrl += '/';
+  if (baseUrl.includes('file:') || baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1')) {
+    baseUrl = 'https://siteme-liart.vercel.app/';
+  }
+
+  const shareUrl = `${baseUrl}#sync=${base64Str}`;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      showToast('🔗 คัดลอกลิงก์แชร์เรียบร้อยแล้ว! ส่งต่อให้ใครเปิดดูก็จะเห็นเว็บที่คุณแก้ล่าสุด 100% ทันที');
+    }).catch(() => {
+      fallbackCopyText(shareUrl);
+    });
+  } else {
+    fallbackCopyText(shareUrl);
+  }
+};
+
+window.openMagicPreview = function () {
+  const currentWorks = worksheets || DEFAULT_WORKSHEETS;
+  const currentProf = profileData || DEFAULT_PROFILE;
+
+  const payload = {
+    p: currentProf,
+    w: currentWorks,
+    t: Date.now()
+  };
+
+  const jsonStr = JSON.stringify(payload);
+  const base64Str = btoa(unescape(encodeURIComponent(jsonStr)));
+  const localUrl = `index.html#sync=${base64Str}`;
+  window.open(localUrl, '_blank');
+};

@@ -79,6 +79,29 @@ document.addEventListener('DOMContentLoaded', () => {
   setupNavigation();
   setupEventListeners();
   renderAll();
+
+  // Initialize Real-Time Google Cloud Sync
+  if (typeof CloudSync !== 'undefined') {
+    CloudSync.init((cloudData) => {
+      if (cloudData) {
+        let changed = false;
+        if (cloudData.worksheets && Array.isArray(cloudData.worksheets)) {
+          worksheets = cloudData.worksheets;
+          localStorage.setItem(STORAGE_WORKS_KEY, JSON.stringify(worksheets));
+          changed = true;
+        }
+        if (cloudData.profile && typeof cloudData.profile === 'object') {
+          profileData = cloudData.profile;
+          localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(profileData));
+          changed = true;
+        }
+        if (changed) {
+          renderAll();
+          console.log('App: UI re-rendered from Real-Time Cloud Sync! ☁️✨');
+        }
+      }
+    });
+  }
 });
 
 /* ---------------- Role Management (Teacher / Viewer vs Admin) ---------------- */
@@ -227,8 +250,51 @@ function updateThemeIcon(theme) {
     : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
 }
 
+/* ---------------- Magic Link Synchronizer (Instant Zero-Config Sharing) ---------------- */
+function checkSharedState() {
+  try {
+    let payload = null;
+    const hash = window.location.hash || '';
+    if (hash.includes('sync=')) {
+      payload = hash.split('sync=')[1].split('&')[0];
+    } else {
+      const params = new URLSearchParams(window.location.search);
+      payload = params.get('sync');
+    }
+
+    if (payload) {
+      const decodedJson = decodeURIComponent(escape(atob(payload)));
+      const data = JSON.parse(decodedJson);
+      if (data) {
+        if (data.p) {
+          profileData = Object.assign({}, DEFAULT_PROFILE, data.p);
+          localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(profileData));
+        }
+        if (data.w && Array.isArray(data.w)) {
+          worksheets = data.w;
+          localStorage.setItem(STORAGE_WORKS_KEY, JSON.stringify(worksheets));
+        }
+        try {
+          const cleanUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+        } catch (e) {}
+        console.log('App: Successfully loaded synchronized state from Magic Share Link! 🚀');
+        return true;
+      }
+    }
+  } catch (e) {
+    console.warn('Error reading shared link payload:', e);
+  }
+  return false;
+}
+
 /* ---------------- Data Management ---------------- */
 function initData() {
+  const hasShared = checkSharedState();
+  if (hasShared) {
+    return;
+  }
+
   const stored = localStorage.getItem(STORAGE_WORKS_KEY);
   if (stored) {
     try {
@@ -252,6 +318,16 @@ function initData() {
   } else {
     profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
     saveProfile();
+  }
+
+  // Automatic upgrade: If local cache still contains the old template placeholder from v1
+  if (profileData && profileData.brandTitle === 'ภควัต' && !profileData.brandLogoImage && (profileData.heroGpa === '3.85' || !profileData.avatarImage)) {
+    profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
+    saveProfile();
+  }
+  if (worksheets && worksheets.length === 5 && worksheets.some(w => w.id === 'work-5')) {
+    worksheets = JSON.parse(JSON.stringify(DEFAULT_WORKSHEETS));
+    saveWorksheets();
   }
 
   // Ensure each education item matches the new milestone sequence (ม.ต้น, ม.ปลาย, ปวส.)
@@ -290,6 +366,9 @@ function saveProfile() {
   localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(profileData));
   renderProfileInfo();
   broadcastRealtimeSync('PROFILE_UPDATED');
+  if (typeof CloudSync !== 'undefined') {
+    CloudSync.saveToCloud(profileData, worksheets);
+  }
 }
 
 function saveWorksheets() {
@@ -299,6 +378,9 @@ function saveWorksheets() {
     filterCalendarInstance.refresh();
   }
   broadcastRealtimeSync('WORKSHEETS_UPDATED', { count: worksheets.length });
+  if (typeof CloudSync !== 'undefined') {
+    CloudSync.saveToCloud(profileData, worksheets);
+  }
 }
 
 /* ---------------- Navigation / Routing ---------------- */

@@ -4,11 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ภควัต (Pakawat) | พอร์ตโฟลิโอ & คลังเก็บใบงาน</title>
+  <title>Pakawat Srirat | พอร์ตโฟลิโอ & คลังเก็บใบงาน</title>
   <meta name="description" content="เว็บไซต์เก็บงาน แนะนำตนเอง ประวัติส่วนตัว และคลังสะสมผลงานใบงานของ ภควัต (Pakawat)">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="icon"
-    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+  <link rel="icon" href="assets/images/OIP.webp">
 </head>
 
 <body>
@@ -26,8 +25,8 @@
     <header class="site-header">
       <div class="container nav-container">
         <a href="#home" class="brand-logo" id="brand-logo-link">
-          <div class="logo-badge" id="site-brand-badge">P</div>
-          <span id="site-brand-text">ภควัต <b>Portfolio</b></span>
+          <div class="logo-badge" id="site-brand-badge" style="background:transparent; padding:0;"><img src="assets/images/OIP.webp" alt="Logo" class="logo-badge-img" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:8px;" /></div>
+          <span id="site-brand-text">Pakawat <b>Srirat</b></span>
         </a>
 
         <!-- Navigation Links -->
@@ -137,11 +136,11 @@
 
                 <div class="hero-stats">
                   <div class="stat-item">
-                    <h4 id="stat-total-works">5</h4>
+                    <h4 id="stat-total-works">3</h4>
                     <p>ใบงานที่บันทึกแล้ว</p>
                   </div>
                   <div class="stat-item">
-                    <h4 id="stat-gpa-val">3.85</h4>
+                    <h4 id="stat-gpa-val">3.88</h4>
                     <p id="stat-gpa-label">เกรดเฉลี่ยสะสม (GPA)</p>
                   </div>
                   <div class="stat-item">
@@ -166,8 +165,8 @@
                   <div class="hero-bottom-badge">
                     <div class="badge-icon purple" id="hero-badge-top-icon">💻</div>
                     <div class="badge-text">
-                      <div class="title" id="hero-badge-top-label">สาขาการเรียน</div>
-                      <div class="value" id="hero-badge-top-val">วิทย์-คณิต-คอมฯ</div>
+                      <div class="title" id="hero-badge-top-label">สาขาเทคโนโลยีสารสนเทศ</div>
+                      <div class="value" id="hero-badge-top-val">คอมพิวเตอร์</div>
                     </div>
                   </div>
 
@@ -175,7 +174,7 @@
                     <div class="badge-icon emerald">✨</div>
                     <div class="badge-text">
                       <div class="title">สถานะผลงาน</div>
-                      <div class="value" id="stat-badge-works">5 รายการ</div>
+                      <div class="value" id="stat-badge-works">3 รายการ</div>
                     </div>
                   </div>
                 </div>
@@ -621,7 +620,11 @@
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
 
-  <!-- Scripts -->
+  <!-- Firebase SDK (Compat version for Real-Time Google Cloud Sync) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/cloud-sync.js"></script>
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
 </body>
