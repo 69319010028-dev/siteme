@@ -167,6 +167,16 @@ const CloudSync = (function () {
       if (work.image && work.image.startsWith('data:image')) {
         work.image = await compressBase64(work.image, 1000, 0.82);
       }
+      // Never send raw base64 PDF data to Firestore (exceeds 1MB document limit)
+      if (work.pdfUrl && work.pdfUrl.startsWith('data:application/pdf')) {
+        work.pdfUrl = '';
+      }
+      if (work.link && work.link.startsWith('data:application/pdf')) {
+        work.link = '';
+      }
+      if (work.fileLink && work.fileLink.startsWith('data:application/pdf')) {
+        work.fileLink = '#';
+      }
     }
 
     return {

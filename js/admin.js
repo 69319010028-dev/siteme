@@ -225,8 +225,20 @@ function initData() {
       if (cloudData) {
         let changed = false;
         if (cloudData.worksheets && Array.isArray(cloudData.worksheets)) {
-          worksheets = cloudData.worksheets;
-          localStorage.setItem(STORAGE_WORKS_KEY, JSON.stringify(worksheets));
+          // Merge with local worksheets: Keep any newly added local works so they are never lost!
+          const cloudIds = new Set(cloudData.worksheets.map(w => w.id));
+          const localOnly = worksheets.filter(w => !cloudIds.has(w.id));
+          const mergedCloud = cloudData.worksheets.map(cw => {
+            const local = worksheets.find(lw => lw.id === cw.id);
+            if (local && (local.hasPdf || local.pdfName)) {
+              return { ...cw, hasPdf: true, pdfName: local.pdfName || cw.pdfName };
+            }
+            return cw;
+          });
+          worksheets = [...localOnly, ...mergedCloud];
+          try {
+            localStorage.setItem(STORAGE_WORKS_KEY, JSON.stringify(worksheets));
+          } catch (e) {}
           changed = true;
         }
         if (cloudData.profile && typeof cloudData.profile === 'object') {
@@ -253,7 +265,35 @@ function initData() {
 }
 
 function saveWorksheets() {
-  localStorage.setItem(STORAGE_WORKS_KEY, JSON.stringify(worksheets));
+  // Sanitize worksheets to prevent localStorage / Cloud quota overflow
+  if (Array.isArray(worksheets)) {
+    worksheets.forEach(w => {
+      if (w.pdfUrl && w.pdfUrl.startsWith('data:application/pdf')) {
+        if (typeof PdfStorage !== 'undefined') {
+          PdfStorage.savePdf(w.id, w.pdfUrl, w.pdfName || (w.title + '.pdf'));
+        }
+        w.hasPdf = true;
+        w.pdfUrl = '';
+      }
+      if (w.link && w.link.startsWith('data:application/pdf')) {
+        if (typeof PdfStorage !== 'undefined') {
+          PdfStorage.savePdf(w.id, w.link, w.pdfName || (w.title + '.pdf'));
+        }
+        w.hasPdf = true;
+        w.link = '';
+      }
+      if (w.fileLink && w.fileLink.startsWith('data:application/pdf')) {
+        w.fileLink = '#';
+      }
+    });
+  }
+
+  try {
+    localStorage.setItem(STORAGE_WORKS_KEY, JSON.stringify(worksheets));
+  } catch (e) {
+    console.warn('localStorage save warning:', e);
+  }
+
   renderAdminAll();
   if (adminFilterCalendarInstance) {
     adminFilterCalendarInstance.refresh();
@@ -1339,7 +1379,9 @@ function setupEventListeners() {
 
   // Image & PDF Upload Handling (Add Modal)
   let currentAddPdfBase64 = null;
+  let currentAddPdfFileName = null;
   let currentEditPdfBase64 = null;
+  let currentEditPdfFileName = null;
 
   const addFileInput = document.getElementById('add-image-file');
   const addPlaceholder = document.getElementById('add-upload-placeholder');
@@ -1350,10 +1392,11 @@ function setupEventListeners() {
     addFileInput.addEventListener('change', (e) => {
       const file = e.target.files && e.target.files[0];
       if (file) {
-        processImageFile(file, (dataUrl, pdfUrl) => {
+        processImageFile(file, (dataUrl, pdfUrl, fileName) => {
           currentAddImageBase64 = dataUrl;
           if (pdfUrl) {
             currentAddPdfBase64 = pdfUrl;
+            currentAddPdfFileName = fileName || file.name;
           }
           if (addPreview) {
             addPreview.src = dataUrl;
@@ -1370,6 +1413,7 @@ function setupEventListeners() {
     btnRemoveAddImage.addEventListener('click', () => {
       currentAddImageBase64 = null;
       currentAddPdfBase64 = null;
+      currentAddPdfFileName = null;
       if (addFileInput) addFileInput.value = '';
       if (addPreview) {
         addPreview.src = '';
@@ -1397,16 +1441,19 @@ function setupEventListeners() {
 
       const sampleImages = ['assets/images/work1.jpg', 'assets/images/work2.jpg', 'assets/images/work3.jpg'];
       const chosenImage = currentAddImageBase64 || sampleImages[Math.floor(Math.random() * sampleImages.length)];
-      const chosenPdf = currentAddPdfBase64 || (getPdfEmbedUrl(link) ? link : '');
-      const finalLink = link || currentAddPdfBase64 || '';
+      const workId = 'work-' + Date.now();
+      const hasPdfFile = Boolean(currentAddPdfBase64);
+      const isDriveOrExternalPdf = Boolean(link && (link.includes('drive.google.com') || link.toLowerCase().endsWith('.pdf') || link.toLowerCase().includes('.pdf?')));
 
       const newWork = {
-        id: 'work-' + Date.now(),
+        id: workId,
         title: title,
         date: formattedDate,
         rawDate: rawDate,
-        link: finalLink,
-        pdfUrl: chosenPdf,
+        link: link || '',
+        pdfUrl: isDriveOrExternalPdf ? link : '',
+        pdfName: currentAddPdfFileName || (title + '.pdf'),
+        hasPdf: hasPdfFile || isDriveOrExternalPdf,
         subject: 'ใบงานการเรียนรู้',
         status: 'done',
         statusText: 'ส่งแล้ว',
@@ -1419,8 +1466,12 @@ function setupEventListeners() {
         ],
         tools: ['เอกสารประกอบการเรียน', 'คอมพิวเตอร์'],
         instructorComment: 'บันทึกในระบบเรียบร้อยแล้ว',
-        fileLink: finalLink || '#'
+        fileLink: link || '#'
       };
+
+      if (hasPdfFile && typeof PdfStorage !== 'undefined') {
+        PdfStorage.savePdf(workId, currentAddPdfBase64, currentAddPdfFileName);
+      }
 
       worksheets.unshift(newWork);
       saveWorksheets();
@@ -1429,6 +1480,7 @@ function setupEventListeners() {
 
       currentAddImageBase64 = null;
       currentAddPdfBase64 = null;
+      currentAddPdfFileName = null;
       if (addFileInput) addFileInput.value = '';
       if (addPreview) {
         addPreview.src = '';
@@ -1448,10 +1500,11 @@ function setupEventListeners() {
     editFileInput.addEventListener('change', (e) => {
       const file = e.target.files && e.target.files[0];
       if (file) {
-        processImageFile(file, (dataUrl, pdfUrl) => {
+        processImageFile(file, (dataUrl, pdfUrl, fileName) => {
           currentEditImageBase64 = dataUrl;
           if (pdfUrl) {
             currentEditPdfBase64 = pdfUrl;
+            currentEditPdfFileName = fileName || file.name;
           }
           if (editPreview) {
             editPreview.src = dataUrl;
@@ -1490,20 +1543,22 @@ function setupEventListeners() {
           target.fileLink = newLink;
           if (getPdfEmbedUrl(newLink)) {
             target.pdfUrl = newLink;
+            target.hasPdf = true;
           }
         }
         if (currentEditImageBase64) {
           target.image = currentEditImageBase64;
         }
         if (currentEditPdfBase64) {
-          target.pdfUrl = currentEditPdfBase64;
-          if (!newLink) {
-            target.link = currentEditPdfBase64;
-            target.fileLink = currentEditPdfBase64;
+          target.hasPdf = true;
+          target.pdfName = currentEditPdfFileName || target.pdfName || (newTitle + '.pdf');
+          if (typeof PdfStorage !== 'undefined') {
+            PdfStorage.savePdf(id, currentEditPdfBase64, target.pdfName);
           }
         }
         currentEditImageBase64 = null;
         currentEditPdfBase64 = null;
+        currentEditPdfFileName = null;
 
         saveWorksheets();
         closeAllModals();
@@ -1814,6 +1869,9 @@ window.deleteWorksheet = function (id) {
   if (!confirmed) return;
 
   worksheets = worksheets.filter(w => w.id !== id);
+  if (typeof PdfStorage !== 'undefined') {
+    PdfStorage.deletePdf(id);
+  }
   saveWorksheets();
   showToast(`ลบใบงาน "${work.title}" เรียบร้อยแล้ว 🗑️`);
 };
@@ -2097,8 +2155,8 @@ function processImageFile(file, callback, maxDim = 1200, quality = 0.84) {
 
   // Handle PDF files
   if (file.type === 'application/pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'))) {
-    if (file.size > 2.5 * 1024 * 1024) {
-      alert(`⚠️ ไฟล์ PDF นี้มีขนาด ${(file.size / (1024 * 1024)).toFixed(1)} MB (ค่อนข้างใหญ่)\n\nเพื่อให้เว็บไซต์เปิดได้เร็วและสามารถซิงค์ขึ้นคลาวด์ได้ แนะนำให้อัปโหลดไฟล์ลง Google Drive แล้วนำลิงก์มาวางในช่อง "ลิงก์ผลงานภายนอก" แทนนะครับ`);
+    if (file.size > 25 * 1024 * 1024) {
+      alert(`⚠️ ไฟล์ PDF นี้มีขนาด ${(file.size / (1024 * 1024)).toFixed(1)} MB (เกิน 25 MB)\n\nแนะนำให้อัปโหลดลง Google Drive แล้วนำลิงก์มาวางในช่อง "ลิงก์ผลงานภายนอก" แทนนะครับ`);
       return;
     }
     const reader = new FileReader();
@@ -2161,6 +2219,7 @@ function processImageFile(file, callback, maxDim = 1200, quality = 0.84) {
 
 function formatUrl(url) {
   if (!url) return '#';
+  if (url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('#')) return url;
   if (!/^https?:\/\//i.test(url)) return 'https://' + url;
   return url;
 }

@@ -86,8 +86,20 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cloudData) {
         let changed = false;
         if (cloudData.worksheets && Array.isArray(cloudData.worksheets)) {
-          worksheets = cloudData.worksheets;
-          localStorage.setItem(STORAGE_WORKS_KEY, JSON.stringify(worksheets));
+          // Merge with local worksheets: Keep any newly added local works so they are never lost!
+          const cloudIds = new Set(cloudData.worksheets.map(w => w.id));
+          const localOnly = worksheets.filter(w => !cloudIds.has(w.id));
+          const mergedCloud = cloudData.worksheets.map(cw => {
+            const local = worksheets.find(lw => lw.id === cw.id);
+            if (local && (local.hasPdf || local.pdfName)) {
+              return { ...cw, hasPdf: true, pdfName: local.pdfName || cw.pdfName };
+            }
+            return cw;
+          });
+          worksheets = [...localOnly, ...mergedCloud];
+          try {
+            localStorage.setItem(STORAGE_WORKS_KEY, JSON.stringify(worksheets));
+          } catch (e) {}
           changed = true;
         }
         if (cloudData.profile && typeof cloudData.profile === 'object') {
@@ -391,7 +403,35 @@ function saveProfile() {
 }
 
 function saveWorksheets() {
-  localStorage.setItem(STORAGE_WORKS_KEY, JSON.stringify(worksheets));
+  // Sanitize worksheets to prevent localStorage / Cloud quota overflow
+  if (Array.isArray(worksheets)) {
+    worksheets.forEach(w => {
+      if (w.pdfUrl && w.pdfUrl.startsWith('data:application/pdf')) {
+        if (typeof PdfStorage !== 'undefined') {
+          PdfStorage.savePdf(w.id, w.pdfUrl, w.pdfName || (w.title + '.pdf'));
+        }
+        w.hasPdf = true;
+        w.pdfUrl = '';
+      }
+      if (w.link && w.link.startsWith('data:application/pdf')) {
+        if (typeof PdfStorage !== 'undefined') {
+          PdfStorage.savePdf(w.id, w.link, w.pdfName || (w.title + '.pdf'));
+        }
+        w.hasPdf = true;
+        w.link = '';
+      }
+      if (w.fileLink && w.fileLink.startsWith('data:application/pdf')) {
+        w.fileLink = '#';
+      }
+    });
+  }
+
+  try {
+    localStorage.setItem(STORAGE_WORKS_KEY, JSON.stringify(worksheets));
+  } catch (e) {
+    console.warn('localStorage save warning:', e);
+  }
+
   updateStats();
   if (filterCalendarInstance) {
     filterCalendarInstance.refresh();
@@ -1758,8 +1798,8 @@ function processImageFile(file, callback, maxDim = 1200, quality = 0.84) {
 
   // Handle PDF files
   if (file.type === 'application/pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'))) {
-    if (file.size > 2.5 * 1024 * 1024) {
-      alert(`⚠️ ไฟล์ PDF นี้มีขนาด ${(file.size / (1024 * 1024)).toFixed(1)} MB (ค่อนข้างใหญ่)\n\nเพื่อให้เว็บไซต์เปิดได้เร็วและสามารถซิงค์ขึ้นคลาวด์ได้ แนะนำให้อัปโหลดไฟล์ลง Google Drive แล้วนำลิงก์มาวางในช่อง "ลิงก์ผลงานภายนอก" แทนนะครับ`);
+    if (file.size > 25 * 1024 * 1024) {
+      alert(`⚠️ ไฟล์ PDF นี้มีขนาด ${(file.size / (1024 * 1024)).toFixed(1)} MB (เกิน 25 MB)\n\nแนะนำให้อัปโหลดลง Google Drive แล้วนำลิงก์มาวางในช่อง "ลิงก์ผลงานภายนอก" แทนนะครับ`);
       return;
     }
     const reader = new FileReader();
@@ -1819,24 +1859,77 @@ function processImageFile(file, callback, maxDim = 1200, quality = 0.84) {
   reader.readAsDataURL(file);
 }
 
-/* ---------------- Worksheet Detail View ---------------- */
-window.openWorkDetail = function(id) {
+/* ---------------- Worksheet Detail View & Safe PDF Viewer ---------------- */
+window.viewPdfDocument = async function(id) {
+  const work = worksheets.find(w => w.id === id);
+  if (!work) return;
+
+  let pdfSource = work.pdfUrl || (work.link && !work.link.startsWith('#') ? work.link : null);
+  if (!pdfSource && typeof PdfStorage !== 'undefined') {
+    pdfSource = await PdfStorage.getPdf(work.id);
+  }
+
+  if (pdfSource) {
+    PdfStorage.openPdfInNewTab(pdfSource, work.pdfName || (work.title + '.pdf'));
+  } else {
+    alert('ไม่พบไฟล์เอกสาร PDF สำหรับใบงานนี้');
+  }
+};
+
+window.downloadPdfDocument = async function(id) {
+  const work = worksheets.find(w => w.id === id);
+  if (!work) return;
+
+  let pdfSource = work.pdfUrl || (work.link && !work.link.startsWith('#') ? work.link : null);
+  if (!pdfSource && typeof PdfStorage !== 'undefined') {
+    pdfSource = await PdfStorage.getPdf(work.id);
+  }
+
+  if (pdfSource) {
+    PdfStorage.downloadPdf(pdfSource, work.pdfName || (work.title + '.pdf'));
+  } else {
+    alert('ไม่พบไฟล์เอกสาร PDF สำหรับดาวน์โหลด');
+  }
+};
+
+window.openWorkDetail = async function(id) {
   const work = worksheets.find(w => w.id === id);
   if (!work) return;
 
   const contentEl = document.getElementById('worksheet-detail-content');
   if (!contentEl) return;
 
-  const pdfEmbedUrl = getPdfEmbedUrl(work.pdfUrl || work.link || work.fileLink || (work.image && work.image.startsWith('data:application/pdf') ? work.image : ''));
-  const isPdf = Boolean(pdfEmbedUrl);
-  const fileLinkUrl = work.pdfUrl || work.link || work.fileLink;
+  // Retrieve PDF if present
+  let pdfSource = work.pdfUrl || (work.link && !work.link.startsWith('#') ? work.link : null);
+  if (!pdfSource && typeof PdfStorage !== 'undefined') {
+    pdfSource = await PdfStorage.getPdf(work.id);
+  }
+
+  const isPdfData = pdfSource && pdfSource.startsWith('data:application/pdf');
+  const isDrive = pdfSource && pdfSource.includes('drive.google.com');
+  const isDirectPdf = pdfSource && (pdfSource.toLowerCase().endsWith('.pdf') || pdfSource.toLowerCase().includes('.pdf?'));
+  const hasPdf = Boolean(isPdfData || isDrive || isDirectPdf || work.hasPdf);
+
+  let embedUrl = null;
+  if (isPdfData) {
+    const blob = PdfStorage.dataUrlToBlob(pdfSource);
+    if (blob) {
+      embedUrl = URL.createObjectURL(blob);
+    }
+  } else if (isDrive) {
+    embedUrl = getPdfEmbedUrl(pdfSource);
+  } else if (isDirectPdf) {
+    embedUrl = pdfSource;
+  }
+
+  const hasExternalWebLink = work.link && !work.link.startsWith('data:') && !work.link.startsWith('#') && !isDrive && !isDirectPdf;
 
   contentEl.innerHTML = `
     <div class="detail-preview-container" onclick="openLightbox('${work.id}')" title="คลิกเพื่อดูรูปภาพขนาดใหญ่เต็มจอ">
       <img src="${work.image || 'assets/images/work1.jpg'}" alt="${work.title}" class="detail-preview-img" style="max-height: 480px; object-fit: contain; width: 100%; display: block;" />
       <div class="detail-preview-hint">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-        ${isPdf ? 'คลิกดูภาพหน้าปกเอกสารขนาดเต็ม' : 'คลิกดูภาพขนาดใหญ่เต็มจอ (ความละเอียดสูง)'}
+        ${hasPdf ? 'คลิกดูภาพหน้าปกเอกสารขนาดเต็ม' : 'คลิกดูภาพขนาดใหญ่เต็มจอ (ความละเอียดสูง)'}
       </div>
     </div>
     
@@ -1848,26 +1941,38 @@ window.openWorkDetail = function(id) {
 
       <h2 style="font-size: 1.45rem; color: var(--text-main); font-weight: 700; line-height: 1.4; margin-bottom: 0.75rem;">${work.title}</h2>
 
-      ${isPdf ? `
+      ${hasPdf ? `
         <!-- Interactive In-Site PDF Reader -->
         <div class="embedded-pdf-reader" style="margin-top: 1.25rem; border-radius: 12px; overflow: hidden; border: 1px solid rgba(197, 155, 109, 0.35); background: rgba(0,0,0,0.35); box-shadow: 0 8px 25px rgba(0,0,0,0.4);">
           <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 16px; background: rgba(197, 155, 109, 0.12); border-bottom: 1px solid rgba(197, 155, 109, 0.25); flex-wrap:wrap; gap:8px;">
             <span style="font-weight:700; color:var(--accent-gold); font-size:0.92rem; display:flex; align-items:center; gap:8px;">
-              <span style="font-size:1.15rem;">📄</span> เปิดอ่านเอกสาร PDF ในเว็บ (Interactive PDF Reader)
+              <span style="font-size:1.15rem;">📄</span> เอกสารประกอบ: ${work.pdfName || work.title}
             </span>
-            <a href="${formatUrl(fileLinkUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="font-size:0.8rem; padding:6px 14px; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
-              <span>↗️ เปิดอ่านเต็มจอ (แท็บใหม่)</span>
-            </a>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button type="button" class="btn btn-secondary" onclick="window.viewPdfDocument('${work.id}')" style="font-size:0.82rem; padding:6px 14px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                <span>↗️ เปิดอ่านเต็มจอ (แท็บใหม่)</span>
+              </button>
+              <button type="button" class="btn btn-primary" onclick="window.downloadPdfDocument('${work.id}')" style="font-size:0.82rem; padding:6px 14px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                <span>📥 ดาวน์โหลด PDF</span>
+              </button>
+            </div>
           </div>
-          <iframe src="${pdfEmbedUrl}" style="width:100%; height:550px; border:none; display:block; background:#fff;" title="PDF Reader"></iframe>
+          ${embedUrl ? `
+            <iframe src="${embedUrl}" style="width:100%; height:550px; border:none; display:block; background:#fff;" title="PDF Reader"></iframe>
+          ` : `
+            <div style="padding: 2.5rem; text-align: center; color: var(--text-muted);">
+              <div style="font-size: 2.2rem; margin-bottom: 10px;">📄</div>
+              <p>สามารถกดปุ่ม <b>"เปิดอ่านเต็มจอ"</b> หรือ <b>"ดาวน์โหลด PDF"</b> ด้านบนเพื่อเปิดดูเอกสารได้ทันทีครับ</p>
+            </div>
+          `}
         </div>
       ` : ''}
 
-      ${fileLinkUrl && fileLinkUrl !== '#' && !isPdf ? `
+      ${hasExternalWebLink ? `
         <div style="margin-top: 1rem;">
-          <a href="${formatUrl(fileLinkUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-cyan" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; font-size:0.95rem; text-decoration:none; border-radius:var(--radius-md);">
+          <a href="${formatUrl(work.link)}" target="_blank" rel="noopener noreferrer" class="btn btn-cyan" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; font-size:0.95rem; text-decoration:none; border-radius:var(--radius-md);">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-            🔗 เปิดดูลิงก์ผลงาน / ไฟล์งาน
+            🔗 เปิดดูลิงก์ผลงานภายนอก
           </a>
         </div>
       ` : ''}
@@ -2018,6 +2123,9 @@ window.openEduLightbox = function(eduId) {
 /* ---------------- Helper: URL & Date Formatters ---------------- */
 function formatUrl(url) {
   if (!url) return '#';
+  if (url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('#')) {
+    return url;
+  }
   if (!/^https?:\/\//i.test(url)) {
     return 'https://' + url;
   }
