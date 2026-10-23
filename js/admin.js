@@ -1703,6 +1703,8 @@ function closeAllModals() {
   if (editModal) editModal.classList.remove('active');
   if (editEduModal) editEduModal.classList.remove('active');
   if (changePinModal) changePinModal.classList.remove('active');
+  const magicShareModal = document.getElementById('magic-share-modal');
+  if (magicShareModal) magicShareModal.classList.remove('active');
 }
 
 /* ---------------- Lightbox ---------------- */
@@ -2651,7 +2653,7 @@ function applyProfileCardBackground(el, imgUrl, bgColor, overlayPercent, bgFit) 
 };
 
 /* ---------------- Magic Link Share Generator (Zero-Hassle Instant Sharing) ---------------- */
-window.copyMagicShareLink = function () {
+function buildMagicShareUrl(forLocalPreview = false) {
   const currentWorks = worksheets || DEFAULT_WORKSHEETS;
   const currentProf = profileData || DEFAULT_PROFILE;
 
@@ -2664,14 +2666,31 @@ window.copyMagicShareLink = function () {
   const jsonStr = JSON.stringify(payload);
   const base64Str = btoa(unescape(encodeURIComponent(jsonStr)));
 
+  if (forLocalPreview) {
+    return `index.html#sync=${base64Str}`;
+  }
+
   let baseUrl = window.location.origin + window.location.pathname.replace('admin.html', '').replace('admin', '');
   if (!baseUrl.endsWith('/')) baseUrl += '/';
   if (baseUrl.includes('file:') || baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1')) {
     baseUrl = 'https://siteme-liart.vercel.app/';
   }
 
-  const shareUrl = `${baseUrl}#sync=${base64Str}`;
+  return `${baseUrl}#sync=${base64Str}`;
+}
 
+window.copyMagicShareLink = function () {
+  const shareUrl = buildMagicShareUrl(false);
+
+  // Set URL into modal input
+  const input = document.getElementById('magic-share-link-input');
+  if (input) input.value = shareUrl;
+
+  // Open the modal
+  const modal = document.getElementById('magic-share-modal');
+  if (modal) modal.classList.add('active');
+
+  // Copy to clipboard
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(shareUrl).then(() => {
       showToast('🔗 คัดลอกลิงก์แชร์เรียบร้อยแล้ว! ส่งต่อให้ใครเปิดดูก็จะเห็นเว็บที่คุณแก้ล่าสุด 100% ทันที');
@@ -2683,18 +2702,27 @@ window.copyMagicShareLink = function () {
   }
 };
 
+window.closeMagicShareModal = function () {
+  const modal = document.getElementById('magic-share-modal');
+  if (modal) modal.classList.remove('active');
+};
+
+window.copyMagicModalLink = function () {
+  const input = document.getElementById('magic-share-link-input');
+  const url = input ? input.value : buildMagicShareUrl(false);
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('📋 คัดลอกลิงก์เรียบร้อยแล้ว!');
+    }).catch(() => {
+      fallbackCopyText(url);
+    });
+  } else {
+    fallbackCopyText(url);
+  }
+};
+
 window.openMagicPreview = function () {
-  const currentWorks = worksheets || DEFAULT_WORKSHEETS;
-  const currentProf = profileData || DEFAULT_PROFILE;
-
-  const payload = {
-    p: currentProf,
-    w: currentWorks,
-    t: Date.now()
-  };
-
-  const jsonStr = JSON.stringify(payload);
-  const base64Str = btoa(unescape(encodeURIComponent(jsonStr)));
-  const localUrl = `index.html#sync=${base64Str}`;
+  const localUrl = buildMagicShareUrl(true);
   window.open(localUrl, '_blank');
 };
