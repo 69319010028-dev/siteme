@@ -1004,9 +1004,36 @@
                 </div>
 
                 <div class="form-group" style="margin-bottom: 1.25rem;">
-                  <label class="form-label" for="input-hero-sub">คำโปรยบรรทัดที่ 2</label>
+                  <label class="form-label" for="input-hero-sub">คำโปรยบรรทัดที่ 2 (ข้อความหลัก / Fallback)</label>
                   <input type="text" id="input-hero-sub" class="form-input"
                     placeholder="เช่น ยินดีต้อนรับสู่พื้นที่รวมงาน" oninput="updateHeroPreview()" />
+                </div>
+
+                <!-- Typewriter Phrases Customization -->
+                <div class="form-group" style="margin-bottom: 1.5rem; background: rgba(212, 163, 115, 0.05); border: 1px dashed rgba(212, 163, 115, 0.35); border-radius: 12px; padding: 16px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                    <label class="form-label" for="input-hero-typewriter" style="color: var(--accent-gold); font-weight: 700; margin-bottom: 0; display:flex; align-items:center; gap:6px;">
+                      <span>✨</span> ข้อความตัวพิมพ์ดีดเคลื่อนไหว (Animated Typewriter Phrases)
+                    </label>
+                    <span style="font-size: 0.76rem; color: var(--text-dim); background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px;">1 บรรทัด = 1 ข้อความ</span>
+                  </div>
+                  <textarea id="input-hero-typewriter" class="form-textarea" rows="5"
+                    placeholder="ระบุข้อความที่ต้องการให้พิมพ์วนสลับกัน 1 ข้อความต่อบรรทัด เช่น:
+ยินดีต้อนรับสู่พื้นที่รวมงานออนไลน์ ✨
+นักศึกษา ปวส. สาขาเทคโนโลยีสารสนเทศ 💻
+Web Developer & UI/UX Designer 🎨
+IoT & Microcontrollers Innovation ⚡
+เกรดเฉลี่ยสะสม 3.88 • มุ่งมั่นพัฒนาตนเอง 🏆"
+                    oninput="updateHeroPreview()"
+                    style="font-family: inherit; font-size: 0.9rem; line-height: 1.6;"></textarea>
+                  <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
+                    <small style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.4; flex: 1;">
+                      💡 <strong>ปรับแต่งได้ตามใจชอบ:</strong> พิมพ์ข้อความ คำคม บทบาท หรือคำที่คุณชอบลงไปทีละบรรทัด (ใส่อิโมจิได้เต็มที่) ตัวอักษรจะพิมพ์และลบสลับกันอัตโนมัติบนหน้าแรก!
+                    </small>
+                    <button type="button" class="btn-chip" onclick="resetTypewriterDefaultPhrases()" style="font-size: 0.75rem; padding: 4px 10px; cursor: pointer; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.04); color: var(--text-dim);">
+                      ↺ ใส่ข้อความตัวอย่าง
+                    </button>
+                  </div>
                 </div>
 
                 <!-- 3. Hero Description / Bio -->
@@ -1790,6 +1817,7 @@
   <script src="js/cloud-sync.js"></script>
   <script src="js/data.js"></script>
   <script src="js/admin.js"></script>
+  <script src="js/effects.js"></script>
 </body>
 
 </html>

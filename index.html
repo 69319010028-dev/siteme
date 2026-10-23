@@ -19,6 +19,12 @@
     <div class="orb orb-3"></div>
   </div>
 
+  <!-- Interactive Floating Starlight & Sand Particles -->
+  <canvas id="ambient-particles-canvas" class="ambient-particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- Luxury Cursor Torchlight Glow -->
+  <div class="cursor-glow-orb" id="cursor-glow-orb" aria-hidden="true"></div>
+
   <div class="app-wrapper">
 
     <!-- Navigation Bar -->
@@ -62,10 +68,22 @@
 
         <!-- Actions -->
         <div class="nav-actions">
+          <!-- Real-Time Digital Clock & Live Status -->
+          <div class="live-status-pill" id="live-clock-pill" title="เวลาเรียลไทม์ (ประเทศไทย)">
+            <span class="pulse-emerald-dot"></span>
+            <span id="live-clock-text">--:--:-- น.</span>
+          </div>
+
           <div class="realtime-live-badge" title="ระบบซิงค์ข้อมูลแบบเรียลไทม์อัตโนมัติ (Live Real-Time Sync)">
             <span class="pulse-green-dot"></span>
             <span>เรียลไทม์</span>
           </div>
+
+          <!-- Sound FX Toggle Button -->
+          <button class="sound-toggle-btn" id="sound-toggle-btn" title="เปิด/ปิดเสียงเอฟเฟกต์ปฏิสัมพันธ์ (Sound FX)" aria-label="Toggle Sound">
+            <span id="sound-icon">🔊</span>
+          </button>
+
           <button class="theme-btn" id="theme-toggle-btn" title="สลับโหมดมืด/สว่าง" aria-label="Toggle Theme">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
@@ -108,7 +126,10 @@
                 <h1 class="hero-title">
                   <span id="hero-greeting-text">สวัสดีครับ, ผม</span> <span class="highlight"
                     id="hero-name-text">ภควัต</span> <br>
-                  <span id="hero-sub-text">ยินดีต้อนรับสู่พื้นที่รวมงาน</span>
+                  <span class="typewriter-container">
+                    <span id="hero-sub-text" class="typewriter-text">ยินดีต้อนรับสู่พื้นที่รวมงานออนไลน์ ✨</span>
+                    <span class="typewriter-cursor" aria-hidden="true"></span>
+                  </span>
                 </h1>
                 <p class="hero-desc" id="hero-desc-text">
                   เว็บไซต์นี้สร้างขึ้นเพื่อรวบรวมและนำเสนอผลงาน ใบงาน การบ้าน และโปรเจกต์ต่าง ๆ ตลอดการศึกษา
@@ -627,6 +648,7 @@
   <script src="js/cloud-sync.js"></script>
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/effects.js"></script>
 </body>
 
 </html>

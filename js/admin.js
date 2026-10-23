@@ -195,19 +195,60 @@ function initData() {
     localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(profileData));
   }
 
+  if (profileData) {
+    if (!profileData.education || !Array.isArray(profileData.education) || profileData.education.length === 0) {
+      profileData.education = JSON.parse(JSON.stringify(DEFAULT_PROFILE.education));
+    }
+    if (!profileData.skills || !Array.isArray(profileData.skills) || profileData.skills.length === 0) {
+      profileData.skills = JSON.parse(JSON.stringify(DEFAULT_PROFILE.skills));
+    }
+    if (!profileData.typewriterPhrases || !Array.isArray(profileData.typewriterPhrases) || profileData.typewriterPhrases.length === 0) {
+      profileData.typewriterPhrases = JSON.parse(JSON.stringify(DEFAULT_PROFILE.typewriterPhrases));
+    }
+    window.profileData = profileData;
+  }
+
   // Auto-upgrade if local cache still has old v1 placeholder values
   if (profileData && profileData.brandTitle === 'ภควัต' && !profileData.brandLogoImage && (profileData.heroGpa === '3.85' || !profileData.avatarImage)) {
     profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
     localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(profileData));
+    window.profileData = profileData;
   }
   if (worksheets && worksheets.length === 5 && worksheets.some(w => w.id === 'work-5')) {
     worksheets = JSON.parse(JSON.stringify(DEFAULT_WORKSHEETS));
     localStorage.setItem(STORAGE_WORKS_KEY, JSON.stringify(worksheets));
   }
 
-  // Initialize Cloud Sync in Admin
+  // Initialize Cloud Sync in Admin with real-time updates
   if (typeof CloudSync !== 'undefined') {
-    CloudSync.init();
+    CloudSync.init((cloudData) => {
+      if (cloudData) {
+        let changed = false;
+        if (cloudData.worksheets && Array.isArray(cloudData.worksheets)) {
+          worksheets = cloudData.worksheets;
+          localStorage.setItem(STORAGE_WORKS_KEY, JSON.stringify(worksheets));
+          changed = true;
+        }
+        if (cloudData.profile && typeof cloudData.profile === 'object') {
+          profileData = Object.assign({}, DEFAULT_PROFILE, cloudData.profile);
+          if (!profileData.education || !Array.isArray(profileData.education) || profileData.education.length === 0) {
+            profileData.education = JSON.parse(JSON.stringify(DEFAULT_PROFILE.education));
+          }
+          if (!profileData.skills || !Array.isArray(profileData.skills) || profileData.skills.length === 0) {
+            profileData.skills = JSON.parse(JSON.stringify(DEFAULT_PROFILE.skills));
+          }
+          if (!profileData.typewriterPhrases || !Array.isArray(profileData.typewriterPhrases) || profileData.typewriterPhrases.length === 0) {
+            profileData.typewriterPhrases = JSON.parse(JSON.stringify(DEFAULT_PROFILE.typewriterPhrases));
+          }
+          window.profileData = profileData;
+          localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(profileData));
+          changed = true;
+        }
+        if (changed) {
+          renderAdminAll();
+        }
+      }
+    });
   }
 }
 
@@ -600,6 +641,13 @@ function renderAdminHero() {
   if (greetingInput && document.activeElement !== greetingInput) greetingInput.value = greeting;
   if (nameInput && document.activeElement !== nameInput) nameInput.value = name;
   if (subInput && document.activeElement !== subInput) subInput.value = sub;
+  const typewriterInput = document.getElementById('input-hero-typewriter');
+  const typewriterPhrases = (profile && profile.typewriterPhrases && Array.isArray(profile.typewriterPhrases) && profile.typewriterPhrases.length > 0)
+    ? profile.typewriterPhrases
+    : ((def && def.typewriterPhrases) || []);
+  if (typewriterInput && document.activeElement !== typewriterInput) {
+    typewriterInput.value = typewriterPhrases.join('\n');
+  }
   if (descInput && document.activeElement !== descInput) descInput.value = desc;
 
   if (bannerBgInput && document.activeElement !== bannerBgInput) bannerBgInput.value = bannerBg;
@@ -877,7 +925,15 @@ window.updateHeroPreview = function () {
   if (pTag) pTag.innerText = (tagInput && tagInput.value.trim()) || 'คลังเก็บผลงานและใบงานออนไลน์';
   if (pGreeting) pGreeting.innerText = ((greetingInput && greetingInput.value.trim()) || 'สวัสดีครับ, ผม').replace(/\s+,/g, ',');
   if (pName) pName.innerText = (nameInput && nameInput.value.trim()) || 'ภควัต';
-  if (pSub) pSub.innerText = (subInput && subInput.value.trim()) || 'ยินดีต้อนรับสู่พื้นที่รวมงาน';
+  if (pSub) {
+    const typewriterInput = document.getElementById('input-hero-typewriter');
+    if (typewriterInput && typewriterInput.value.trim()) {
+      const firstLine = typewriterInput.value.split('\n').map(s => s.trim()).filter(Boolean)[0];
+      pSub.innerText = firstLine || (subInput && subInput.value.trim()) || 'ยินดีต้อนรับสู่พื้นที่รวมงาน';
+    } else {
+      pSub.innerText = (subInput && subInput.value.trim()) || 'ยินดีต้อนรับสู่พื้นที่รวมงาน';
+    }
+  }
   if (pDesc) pDesc.innerText = (descInput && descInput.value.trim()) || DEFAULT_PROFILE.heroDesc;
 
   if (pAvatar) {
@@ -995,6 +1051,11 @@ window.handleHeroSave = function (e) {
   profileData.heroGreeting = ((greetingInput && greetingInput.value.trim()) || 'สวัสดีครับ, ผม').replace(/\s+,/g, ',');
   profileData.heroName = (nameInput && nameInput.value.trim()) || 'ภควัต';
   profileData.heroSubtitle = (subInput && subInput.value.trim()) || 'ยินดีต้อนรับสู่พื้นที่รวมงาน';
+  const typewriterInput = document.getElementById('input-hero-typewriter');
+  if (typewriterInput) {
+    const lines = typewriterInput.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+    profileData.typewriterPhrases = lines.length > 0 ? lines : JSON.parse(JSON.stringify(DEFAULT_PROFILE.typewriterPhrases));
+  }
   profileData.heroDesc = (descInput && descInput.value.trim()) || DEFAULT_PROFILE.heroDesc;
   profileData.avatarImage = (currentHeroAvatarBase64 !== null) ? currentHeroAvatarBase64 : (profileData.avatarImage || '');
   profileData.heroBannerImage = (currentHeroBannerImageBase64 !== null) ? currentHeroBannerImageBase64 : (profileData.heroBannerImage || '');
@@ -1029,6 +1090,7 @@ window.resetHeroDefaults = function () {
     profileData.heroGreeting = def.heroGreeting;
     profileData.heroName = def.heroName;
     profileData.heroSubtitle = def.heroSubtitle;
+    profileData.typewriterPhrases = JSON.parse(JSON.stringify(def.typewriterPhrases || []));
     profileData.heroDesc = def.heroDesc;
     profileData.avatarImage = '';
     profileData.heroBannerImage = '';
@@ -1048,6 +1110,9 @@ window.resetHeroDefaults = function () {
     profileData.heroCommitment = def.heroCommitment;
     profileData.heroCommitmentLabel = def.heroCommitmentLabel;
 
+    const typewriterInput = document.getElementById('input-hero-typewriter');
+    if (typewriterInput) typewriterInput.value = (def.typewriterPhrases || []).join('\n');
+
     const fileInput = document.getElementById('hero-avatar-file');
     if (fileInput) fileInput.value = '';
     const bannerFileInput = document.getElementById('hero-banner-file');
@@ -1056,6 +1121,22 @@ window.resetHeroDefaults = function () {
     saveProfile();
     renderAdminHero();
     showToast('รีเซ็ตแบนเนอร์หน้าแรกกลับเป็นค่าเริ่มต้นแล้ว');
+  }
+};
+
+window.resetTypewriterDefaultPhrases = function () {
+  const typewriterInput = document.getElementById('input-hero-typewriter');
+  if (typewriterInput) {
+    const defPhrases = (typeof DEFAULT_PROFILE !== 'undefined' && DEFAULT_PROFILE.typewriterPhrases) || [
+      "ยินดีต้อนรับสู่พื้นที่รวมงานออนไลน์ ✨",
+      "นักศึกษา ปวส. สาขาเทคโนโลยีสารสนเทศ 💻",
+      "Web Developer & UI/UX Designer 🎨",
+      "IoT & Microcontrollers Innovation ⚡",
+      "เกรดเฉลี่ยสะสม 3.88 • มุ่งมั่นพัฒนาตนเอง 🏆"
+    ];
+    typewriterInput.value = defPhrases.join('\n');
+    updateHeroPreview();
+    showToast('โหลดชุดข้อความตัวพิมพ์ดีดตัวอย่างเรียบร้อย (อย่าลืมกดบันทึก)');
   }
 };
 
@@ -1435,8 +1516,19 @@ function setupEventListeners() {
       const desc = document.getElementById('edit-edu-desc').value.trim();
 
       if (!profileData) profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
+      if (!profileData.education || !Array.isArray(profileData.education)) {
+        profileData.education = JSON.parse(JSON.stringify(DEFAULT_PROFILE.education));
+      }
 
-      const item = profileData.education.find(it => (it.id === id)) || profileData.education[id];
+      let item = profileData.education.find(it => (it.id === id)) || profileData.education[id];
+      if (!item) {
+        const defaultMatch = DEFAULT_PROFILE.education.find(it => it.id === id);
+        if (defaultMatch) {
+          item = JSON.parse(JSON.stringify(defaultMatch));
+          profileData.education.push(item);
+        }
+      }
+
       if (item) {
         item.title = title;
         item.sub = school;
@@ -1619,10 +1711,19 @@ window.openEditModal = function (id) {
 };
 
 window.openEditEducationModal = function (eduId) {
-  const profile = profileData || DEFAULT_PROFILE;
-  if (!profile || !profile.education) return;
+  if (!profileData) profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
+  if (!profileData.education || !Array.isArray(profileData.education) || profileData.education.length === 0) {
+    profileData.education = JSON.parse(JSON.stringify(DEFAULT_PROFILE.education));
+  }
 
-  const item = profile.education.find(e => (e.id === eduId)) || profile.education[eduId];
+  let item = profileData.education.find(e => (e.id === eduId)) || profileData.education[eduId];
+  if (!item) {
+    const defaultMatch = DEFAULT_PROFILE.education.find(e => e.id === eduId);
+    if (defaultMatch) {
+      item = JSON.parse(JSON.stringify(defaultMatch));
+      profileData.education.push(item);
+    }
+  }
   if (!item) return;
 
   currentEditEduImageBase64 = null;
@@ -1915,23 +2016,21 @@ function initInteractiveCalendar(containerId, inputId, labelId, initialDateStr, 
 }
 
 /* ---------------- Helper: Image Processing & Formatters ---------------- */
-function processImageFile(file, callback) {
+function processImageFile(file, callback, maxDim = 1200, quality = 0.84) {
   if (!file) return;
   const reader = new FileReader();
 
-  if (file.size <= 8 * 1024 * 1024) {
-    reader.onload = (e) => callback(e.target.result);
-    reader.readAsDataURL(file);
-    return;
-  }
-
   reader.onload = (e) => {
+    const rawResult = e.target.result;
+    if (file.type === 'image/svg+xml' || rawResult.startsWith('data:image/svg+xml')) {
+      return callback(rawResult);
+    }
+
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
       let width = img.width;
       let height = img.height;
-      const maxDim = 3200;
 
       if (width > maxDim || height > maxDim) {
         if (width > height) {
@@ -1949,9 +2048,20 @@ function processImageFile(file, callback) {
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(img, 0, 0, width, height);
-      callback(canvas.toDataURL('image/jpeg', 0.96));
+
+      let compressed;
+      if (file.type === 'image/png') {
+        compressed = canvas.toDataURL('image/png');
+        if (compressed.length > 400000) {
+          compressed = canvas.toDataURL('image/jpeg', quality);
+        }
+      } else {
+        compressed = canvas.toDataURL('image/jpeg', quality);
+      }
+      callback(compressed);
     };
-    img.src = e.target.result;
+    img.onerror = () => callback(rawResult);
+    img.src = rawResult;
   };
   reader.readAsDataURL(file);
 }
@@ -2689,6 +2799,11 @@ window.copyMagicShareLink = function () {
   // Open the modal
   const modal = document.getElementById('magic-share-modal');
   if (modal) modal.classList.add('active');
+
+  // Trigger celebratory confetti burst
+  if (typeof fireConfetti === 'function') {
+    fireConfetti();
+  }
 
   // Copy to clipboard
   if (navigator.clipboard && navigator.clipboard.writeText) {

@@ -91,12 +91,23 @@ document.addEventListener('DOMContentLoaded', () => {
           changed = true;
         }
         if (cloudData.profile && typeof cloudData.profile === 'object') {
-          profileData = cloudData.profile;
+          profileData = Object.assign({}, DEFAULT_PROFILE, cloudData.profile);
+          if (!profileData.education || !Array.isArray(profileData.education) || profileData.education.length === 0) {
+            profileData.education = JSON.parse(JSON.stringify(DEFAULT_PROFILE.education));
+          }
+          if (!profileData.skills || !Array.isArray(profileData.skills) || profileData.skills.length === 0) {
+            profileData.skills = JSON.parse(JSON.stringify(DEFAULT_PROFILE.skills));
+          }
+          if (!profileData.typewriterPhrases || !Array.isArray(profileData.typewriterPhrases) || profileData.typewriterPhrases.length === 0) {
+            profileData.typewriterPhrases = JSON.parse(JSON.stringify(DEFAULT_PROFILE.typewriterPhrases));
+          }
+          window.profileData = profileData;
           localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(profileData));
           changed = true;
         }
         if (changed) {
           renderAll();
+          if (window.reloadTypewriter) window.reloadTypewriter();
           console.log('App: UI re-rendered from Real-Time Cloud Sync! ☁️✨');
         }
       }
@@ -325,6 +336,12 @@ function initData() {
     profileData = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
     saveProfile();
   }
+  if (profileData) {
+    if (!profileData.typewriterPhrases || !Array.isArray(profileData.typewriterPhrases) || profileData.typewriterPhrases.length === 0) {
+      profileData.typewriterPhrases = JSON.parse(JSON.stringify(DEFAULT_PROFILE.typewriterPhrases));
+    }
+    window.profileData = profileData;
+  }
   if (worksheets && worksheets.length === 5 && worksheets.some(w => w.id === 'work-5')) {
     worksheets = JSON.parse(JSON.stringify(DEFAULT_WORKSHEETS));
     saveWorksheets();
@@ -363,8 +380,10 @@ function initData() {
 }
 
 function saveProfile() {
+  window.profileData = profileData;
   localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(profileData));
   renderProfileInfo();
+  if (window.reloadTypewriter) window.reloadTypewriter();
   broadcastRealtimeSync('PROFILE_UPDATED');
   if (typeof CloudSync !== 'undefined') {
     CloudSync.saveToCloud(profileData, worksheets);
@@ -1579,7 +1598,11 @@ function reloadRealtimeData(actionType = 'update', notify = true) {
     }
   }
 
+  window.profileData = profileData;
   renderAll();
+  if (window.reloadTypewriter) {
+    window.reloadTypewriter();
+  }
   if (filterCalendarInstance) {
     filterCalendarInstance.refresh();
   }
@@ -1607,27 +1630,21 @@ function closeAllModals() {
 }
 
 /* ---------------- Helper: Process & Keep High-Res Image File ---------------- */
-function processImageFile(file, callback) {
+function processImageFile(file, callback, maxDim = 1200, quality = 0.84) {
   if (!file) return;
   const reader = new FileReader();
 
-  // If under 8MB, keep 100% RAW original quality & resolution without downscaling!
-  if (file.size <= 8 * 1024 * 1024) {
-    reader.onload = (e) => {
-      callback(e.target.result);
-    };
-    reader.readAsDataURL(file);
-    return;
-  }
-
-  // If extremely large (>8MB), preserve high resolution up to 3200px at 0.96 quality
   reader.onload = (e) => {
+    const rawResult = e.target.result;
+    if (file.type === 'image/svg+xml' || rawResult.startsWith('data:image/svg+xml')) {
+      return callback(rawResult);
+    }
+
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
       let width = img.width;
       let height = img.height;
-      const maxDim = 3200;
 
       if (width > maxDim || height > maxDim) {
         if (width > height) {
@@ -1645,10 +1662,20 @@ function processImageFile(file, callback) {
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(img, 0, 0, width, height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.96);
-      callback(dataUrl);
+
+      let compressed;
+      if (file.type === 'image/png') {
+        compressed = canvas.toDataURL('image/png');
+        if (compressed.length > 400000) {
+          compressed = canvas.toDataURL('image/jpeg', quality);
+        }
+      } else {
+        compressed = canvas.toDataURL('image/jpeg', quality);
+      }
+      callback(compressed);
     };
-    img.src = e.target.result;
+    img.onerror = () => callback(rawResult);
+    img.src = rawResult;
   };
   reader.readAsDataURL(file);
 }

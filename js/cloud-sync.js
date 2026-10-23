@@ -146,6 +146,23 @@ const CloudSync = (function () {
       safeProfile.brandLogoImage = await compressBase64(safeProfile.brandLogoImage, 400, 0.85);
     }
 
+    if (safeProfile.education && Array.isArray(safeProfile.education)) {
+      for (let edu of safeProfile.education) {
+        if (edu.logo && edu.logo.startsWith('data:image')) {
+          edu.logo = await compressBase64(edu.logo, 400, 0.85);
+          edu.image = edu.logo;
+        }
+      }
+    } else if (typeof DEFAULT_PROFILE !== 'undefined' && DEFAULT_PROFILE.education) {
+      safeProfile.education = JSON.parse(JSON.stringify(DEFAULT_PROFILE.education));
+    }
+
+    if (!safeProfile.skills || !Array.isArray(safeProfile.skills) || safeProfile.skills.length === 0) {
+      if (typeof DEFAULT_PROFILE !== 'undefined' && DEFAULT_PROFILE.skills) {
+        safeProfile.skills = JSON.parse(JSON.stringify(DEFAULT_PROFILE.skills));
+      }
+    }
+
     for (let work of safeWorks) {
       if (work.image && work.image.startsWith('data:image')) {
         work.image = await compressBase64(work.image, 1000, 0.82);
