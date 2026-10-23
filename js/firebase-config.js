@@ -1,20 +1,19 @@
 /**
  * Firebase Real-Time Cloud Configuration for Pakawat Portfolio
- * 
- * คุณสามารถนำ Firebase Config จาก Google Firebase Console มาใส่ที่นี่
- * หรือสามารถกรอกผ่านหน้า Admin เมนู "☁️ คลาวด์เรียลไทม์ (Google Cloud)" ได้โดยตรง
+ * Google Sites-like Real-Time Database Sync
  */
 
 const DEFAULT_FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyBqLbjZ1RJINHPvHBa9e3neIBR2LK7TukY",
+  authDomain: "pakawat-site.firebaseapp.com",
+  projectId: "pakawat-site",
+  storageBucket: "pakawat-site.firebasestorage.app",
+  messagingSenderId: "280773564027",
+  appId: "1:280773564027:web:19454bacbcdaf05d0974de",
+  measurementId: "G-1ZFZ60MCDJ"
 };
 
-// อ่าน config จาก localStorage หากมีการบันทึกผ่านหน้า Admin
+// อ่าน config จาก localStorage หรือใช้ DEFAULT_FIREBASE_CONFIG
 function getActiveFirebaseConfig() {
   try {
     const saved = localStorage.getItem('pakawat_firebase_config');
